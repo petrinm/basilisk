@@ -24,10 +24,10 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 
 include(conan)
-conan_add_remote(NAME bincrafters URL https://api.bintray.com/conan/bincrafters/public-conan)
+conan_add_remote(NAME bincrafters URL https://bincrafters.jfrog.io/artifactory/api/conan/public-conan)
 conan_add_remote(NAME conan-community URL https://api.bintray.com/conan/conan-community/conan)
 
-set(required_conan_libraries eigen/3.3.5@conan/stable)
+set(required_conan_libraries eigen/3.3.7@)
 
 
 option(USE_PROTOBUFFERS "Include modules which use Google Protobuffers" OFF)
@@ -40,6 +40,7 @@ set(requires_zmq_modules "viz_interface/vizInterface.i")
 set(requires_opencv_modules "imageProcessing/houghCircles/houghCircles.i")
 
 if(USE_PROTOBUFFERS)
+  list(APPEND required_conan_libraries libsodium/1.0.18@bincrafters/stable)
   list(APPEND required_conan_libraries protobuf/3.5.1@bincrafters/stable)
 endif()
 if(USE_OPENCV)
