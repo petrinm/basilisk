@@ -39,6 +39,7 @@ public:
     void setT(Eigen::VectorXd T);
     void setW(Eigen::VectorXd W);
     void setAvgXDot(double AvgXDot);
+    void setLS_Dot();
     
     double AvgXDot;                  //!< desired average velocity norm
     Eigen::VectorXd T;               //!< time tags: specifies at what time each waypoint is hit
@@ -57,9 +58,11 @@ public:
     bool XDot_N_flag;                //!< indicates that first derivative at final point has been specified
     bool XDDot_0_flag;               //!< indicates that second derivative at starting point has been specified
     bool XDDot_N_flag;               //!< indicates that second derivative at final point has been specified
+    bool LS_Dot;                     //!< indicates whether LS approximation is done with first derivative constraint, LS_Dot is false
+
 };
 
-//! @brief The OutputDataSet class is used as a data structure to contain the interpolated function and its first- and 
+//! @brief The OutputDataSet class is used as a data structure to contain the interpolated function and its first- and
 //! second-order derivatives, together with the time-tag vector T.
 class OutputDataSet {
 public:
@@ -69,17 +72,21 @@ public:
     double getStates(double t, int derivative,  int index);
     
     Eigen::VectorXd T;               //!< time tags for each point of the interpolated trajectory
+    Eigen::VectorXd T_way_calc;      //!< time tags calculated for the waypoints when T_flag = false
     Eigen::VectorXd X1;              //!< coordinate #1 of the interpolated trajectory
     Eigen::VectorXd X2;              //!< coordinate #2 of the interpolated trajectory
     Eigen::VectorXd X3;              //!< coordinate #3 of the interpolated trajectory
+    Eigen::VectorXd X1_prime;        //!< first derivative of coordinate #1 of the way points
+    Eigen::VectorXd X2_prime;        //!< first derivative of coordinate #2 of the way  points
+    Eigen::VectorXd X3_prime;        //!< first derivative of coordinate #3 of the way points
     Eigen::VectorXd XD1;             //!< first derivative of coordinate #1 of the interpolated trajectory
     Eigen::VectorXd XD2;             //!< first derivative of coordinate #2 of the interpolated trajectory
     Eigen::VectorXd XD3;             //!< first derivative of coordinate #3 of the interpolated trajectory
     Eigen::VectorXd XDD1;            //!< second derivative of coordinate #1 of the interpolated trajectory
     Eigen::VectorXd XDD2;            //!< second derivative of coordinate #2 of the interpolated trajectory
     Eigen::VectorXd XDD3;            //!< second derivative of coordinate #3 of the interpolated trajectory
-
     int P;                           //!< polynomial degree of the BSpline
+    double Ttot;                     //!< the last time value of the time vector
     Eigen::VectorXd U;               //!< knot vector of the BSpline
     Eigen::VectorXd C1;              //!< coordinate #1 of the control points
     Eigen::VectorXd C2;              //!< coordinate #2 of the control points
@@ -88,6 +95,7 @@ public:
 
 void interpolate(InputDataSet Input, int Num, int P, OutputDataSet *Output);
 
-void approximate(InputDataSet Input, int Num, int Q, int P, OutputDataSet *Output);
+void approximate(InputDataSet Input, int Num, int n, int P, OutputDataSet *Output);
 
 void basisFunction(double t, Eigen::VectorXd U, int I, int P, double *NN, double *NN1, double *NN2);
+
