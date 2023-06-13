@@ -84,6 +84,7 @@ void SpinningBodyOneDOFStateEffector::writeOutputStateMessages(uint64_t CurrentC
 
         // Logging the S frame is the body frame B of that object
         eigenVector3d2CArray(this->r_ScN_N, configLogMsg.r_BN_N);
+        // std::cout << "this is a test" + std::string(this->r_ScN_N) "\n";
         eigenVector3d2CArray(this->v_ScN_N, configLogMsg.v_BN_N);
         eigenVector3d2CArray(this->sigma_SN, configLogMsg.sigma_BN);
         eigenVector3d2CArray(this->omega_SN_S, configLogMsg.omega_BN_B);
@@ -271,6 +272,9 @@ void SpinningBodyOneDOFStateEffector::computeDerivatives(double integTime,
     thetaDDot(0, 0) = this->aTheta.dot(rDDotLocal_BN_B)
             + this->bTheta.dot(omegaDotLocal_BN_B) + this->cTheta;
     this->thetaDotState->setDerivative(thetaDDot);
+
+    // Update Inertial States for Connected Bodies
+    //this->computeSpinningBodyInertialStates();
 }
 
 /*! This method is for calculating the contributions of the SB state effector to the energy and momentum of the spacecraft */

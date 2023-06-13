@@ -288,6 +288,30 @@ void ThrusterStateEffector::addThruster(THRSimConfig* newThruster, Message<SCSta
     return;
 }
 
+// void ThrusterStateEffector::addThruster(THRSimConfig* newThruster, Message<SCStatesMsgPayload>* bodyStateMsg)
+// {
+//     this->thrusterData.push_back(*newThruster);
+
+//     // Create corresponding output message
+//     Message<THROutputMsgPayload>* msg;
+//     msg = new Message<THROutputMsgPayload>;
+//     this->thrusterOutMsgs.push_back(msg);
+
+//     // Set the initial condition
+//     double state = 0.0;
+//     this->kappaInit.push_back(state);
+
+//     // Save the incoming body message
+//     this->attachedBodyInMsgs.push_back(bodyStateMsg->addSubscriber());
+
+//     // Add space for the conversion from body to hub and populate it with default values
+//     BodyToHubInfo attachedBodyToHub;
+//     attachedBodyToHub.dcm_BF.setIdentity();
+//     attachedBodyToHub.r_FB_B.setZero();
+//     attachedBodyToHub.omega_FB_B.setZero();
+//     this->bodyToHubInfo.push_back(attachedBodyToHub);
+// }
+
 /*! This method is used to link the states to the thrusters
  @return void
  @param states The states to link

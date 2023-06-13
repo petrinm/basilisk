@@ -127,7 +127,7 @@ fileName = os.path.basename(os.path.splitext(__file__)[0])
 
 
 # Plotting functions
-def plot_attitude_error(timeDataFSW, dataSigmaBR):
+def plot_(timeDataFSW, dataSigmaBR):
     """Plot the attitude errors."""
     plt.figure(1)
     for idx in range(3):
@@ -163,16 +163,19 @@ def plot_requested_torque(timeDataFSW, dataLr):
     plt.ylabel('Control Torque $L_r$ [Nm]')
 
 
-def plot_thrForce(timeDataFSW, dataMap, numTh):
-    """Plot the Thruster force values."""
-    plt.figure(4)
-    for idx in range(numTh):
-        plt.plot(timeDataFSW, dataMap[:, idx],
-                 color=unitTestSupport.getLineColor(idx, numTh),
-                 label='$thrForce,' + str(idx) + '}$')
-    plt.legend(loc='lower right')
+def plot_armTheta(timeData, thetaData, numTh):
+    """Plot the spinningOneDOF theta values."""
+    plt.figure(1)
+    plt.plot(timeData, thetaData)
     plt.xlabel('Time [min]')
-    plt.ylabel('Force requested [N]')
+    plt.ylabel('Theta [rad]')
+
+def plot_armThetaDot(timeData, thetaDotData, numTh):
+    """Plot the spinningOneDOF theta values."""
+    plt.figure(2)
+    plt.plot(timeData, thetaDotData)
+    plt.xlabel('Time [min]')
+    plt.ylabel('ThetaDot [rad/s]')
 
 
 def plot_OnTimeRequest(timeDataFSW, dataSchm, numTh):
@@ -231,9 +234,7 @@ def run(show_plots, useDVThrusters):
     # create the dynamics task and specify the integration update time
     simTimeStep = macros.sec2nano(0.1)
     dynProcess.addTask(scSim.CreateNewTask(dynTaskName, simTimeStep))
-    fswTimeStep = macros.sec2nano(0.5)
-    fswProcess.addTask(scSim.CreateNewTask(fswTaskName, fswTimeStep))
-
+    
     #
     #   setup the simulation tasks/objects
     #
@@ -263,149 +264,6 @@ def run(show_plots, useDVThrusters):
     # attach gravity model to spacecraft
     scObject.gravField.gravBodies = spacecraft.GravBodyVector(list(gravFactory.gravBodies.values()))
 
-    # setup extForceTorque module
-    # the control torque is read in through the messaging system
-    extFTObject = extForceTorque.ExtForceTorque()
-    extFTObject.ModelTag = "externalDisturbance"
-    extFTObject.extTorquePntB_B = [[0.25], [-0.25], [0.1]]
-    scObject.addDynamicEffector(extFTObject)
-    scSim.AddModelToTask(dynTaskName, extFTObject)
-
-    # add the simple Navigation sensor module.  This sets the SC attitude, rate, position
-    # velocity navigation message
-    sNavObject = simpleNav.SimpleNav()
-    sNavObject.ModelTag = "SimpleNavigation"
-    scSim.AddModelToTask(dynTaskName, sNavObject)
-
-    # create arrays for thrusters' locations and directions
-    if useDVThrusters:
-
-        location = [
-            [
-                0,
-                0.95,
-                -1.1
-            ],
-            [
-                0.8227241335952166,
-                0.4750000000000003,
-                -1.1
-            ],
-            [
-                0.8227241335952168,
-                -0.47499999999999976,
-                -1.1
-            ],
-            [
-                0,
-                -0.95,
-                -1.1
-            ],
-            [
-                -0.8227241335952165,
-                -0.4750000000000004,
-                -1.1
-            ],
-            [
-                -0.822724133595217,
-                0.4749999999999993,
-                -1.1
-            ]
-        ]
-
-        direction = [[0.0, 0.0, 1.0],
-                     [0.0, 0.0, 1.0],
-                     [0.0, 0.0, 1.0],
-                     [0.0, 0.0, 1.0],
-                     [0.0, 0.0, 1.0],
-                     [0.0, 0.0, 1.0]]
-    else:
-
-        location = [
-            [
-                3.874945160902288e-2,
-                -1.206182747348013,
-                0.85245
-            ],
-            [
-                3.874945160902288e-2,
-                -1.206182747348013,
-                -0.85245
-            ],
-            [
-                -3.8749451609022656e-2,
-                -1.206182747348013,
-                0.85245
-            ],
-            [
-                -3.8749451609022656e-2,
-                -1.206182747348013,
-                -0.85245
-            ],
-            [
-                -3.874945160902288e-2,
-                1.206182747348013,
-                0.85245
-            ],
-            [
-                -3.874945160902288e-2,
-                1.206182747348013,
-                -0.85245
-            ],
-            [
-                3.8749451609022656e-2,
-                1.206182747348013,
-                0.85245
-            ],
-            [
-                3.8749451609022656e-2,
-                1.206182747348013,
-                -0.85245
-            ]
-        ]
-
-        direction = [
-            [
-                -0.7071067811865476,
-                0.7071067811865475,
-                0.0
-            ],
-            [
-                -0.7071067811865476,
-                0.7071067811865475,
-                0.0
-            ],
-            [
-                0.7071067811865475,
-                0.7071067811865476,
-                0.0
-            ],
-            [
-                0.7071067811865475,
-                0.7071067811865476,
-                0.0
-            ],
-            [
-                0.7071067811865476,
-                -0.7071067811865475,
-                0.0
-            ],
-            [
-                0.7071067811865476,
-                -0.7071067811865475,
-                0.0
-            ],
-            [
-                -0.7071067811865475,
-                -0.7071067811865476,
-                0.0
-            ],
-            [
-                -0.7071067811865475,
-                -0.7071067811865476,
-                0.0
-            ]
-        ]
 
     # create the set of thruster in the dynamics task
     thrusterSet = thrusterStateEffector.ThrusterStateEffector()
@@ -417,13 +275,6 @@ def run(show_plots, useDVThrusters):
 
     # Make a fresh thruster factory instance, this is critical to run multiple times
     thFactory = simIncludeThruster.thrusterFactory()
-
-    # create the thruster devices by specifying the thruster type and its location and direction
-    for pos_B, dir_B in zip(location, direction):
-        if useDVThrusters:
-            thFactory.create('MOOG_Monarc_22_6', pos_B, dir_B, cutoffFrequency=1.)
-        else:
-            thFactory.create('MOOG_Monarc_1', pos_B, dir_B, cutoffFrequency=1.)
 
     # setup 1DOF arm to attach thruster onto
     spinningBody1 = spinningBodyOneDOFStateEffector.SpinningBodyOneDOFStateEffector()
@@ -465,111 +316,12 @@ def run(show_plots, useDVThrusters):
     thFactory.addToSpacecraft(thrModelTag, thrusterSet, scObject)
 
     #
-    #   setup the FSW algorithm tasks
-    #
-
-    # setup inertial3D guidance module
-    inertial3DConfig = inertial3D.inertial3DConfig()
-    inertial3DWrap = scSim.setModelDataWrap(inertial3DConfig)
-    inertial3DWrap.ModelTag = "inertial3D"
-    inertial3DConfig.sigma_R0N = [0., 0., 0.]  # set the desired inertial orientation
-    scSim.AddModelToTask(fswTaskName, inertial3DWrap, inertial3DConfig)
-
-    # setup the attitude tracking error evaluation module
-    attErrorConfig = attTrackingError.attTrackingErrorConfig()
-    attErrorWrap = scSim.setModelDataWrap(attErrorConfig)
-    attErrorWrap.ModelTag = "attErrorInertial3D"
-    scSim.AddModelToTask(fswTaskName, attErrorWrap, attErrorConfig)
-
-    # setup the MRP Feedback control module
-    mrpControlConfig = mrpFeedback.mrpFeedbackConfig()
-    mrpControlWrap = scSim.setModelDataWrap(mrpControlConfig)
-    mrpControlWrap.ModelTag = "mrpFeedback"
-    scSim.AddModelToTask(fswTaskName, mrpControlWrap, mrpControlConfig)
-    mrpControlConfig.K = 3.5 * 10.0
-    mrpControlConfig.Ki = 0.0002  # make value negative to turn off integral feedback
-    mrpControlConfig.P = 30.0 * 10.0
-    mrpControlConfig.integralLimit = 2. / mrpControlConfig.Ki * 0.1
-
-    # setup the thruster force mapping module
-    thrForceMappingConfig = thrForceMapping.thrForceMappingConfig()
-    thrForceMappingWrap = scSim.setModelDataWrap(thrForceMappingConfig)
-    thrForceMappingWrap.ModelTag = "thrForceMapping"
-    scSim.AddModelToTask(fswTaskName, thrForceMappingWrap, thrForceMappingConfig)
-
-    if useDVThrusters:
-        controlAxes_B = [1, 0, 0,
-                         0, 1, 0]
-        thrForceMappingConfig.thrForceSign = -1
-    else:
-        controlAxes_B = [1, 0, 0,
-                         0, 1, 0,
-                         0, 0, 1]
-        thrForceMappingConfig.thrForceSign = +1
-    thrForceMappingConfig.controlAxes_B = controlAxes_B
-
-    # setup the Schmitt trigger thruster firing logic module
-    thrFiringSchmittConfig = thrFiringSchmitt.thrFiringSchmittConfig()
-    thrFiringSchmittWrap = scSim.setModelDataWrap(thrFiringSchmittConfig)
-    thrFiringSchmittWrap.ModelTag = "thrFiringSchmitt"
-    scSim.AddModelToTask(fswTaskName, thrFiringSchmittWrap, thrFiringSchmittConfig)
-    thrFiringSchmittConfig.thrMinFireTime = 0.002
-    thrFiringSchmittConfig.level_on = .75
-    thrFiringSchmittConfig.level_off = .25
-    if useDVThrusters:
-        thrFiringSchmittConfig.baseThrustState = 1
-
-    #
     #   Setup data logging before the simulation is initialized
     #
-
-    numDataPoints = 100
-    samplingTime = unitTestSupport.samplingTime(simulationTime, fswTimeStep, numDataPoints)
-    mrpTorqueLog = mrpControlConfig.cmdTorqueOutMsg.recorder(samplingTime)
-    attErrorLog = attErrorConfig.attGuidOutMsg.recorder(samplingTime)
-    snTransLog = sNavObject.transOutMsg.recorder(samplingTime)
-    snAttLog = sNavObject.attOutMsg.recorder(samplingTime)
-    thrMapLog = thrForceMappingConfig.thrForceCmdOutMsg.recorder(samplingTime)
-    thrTrigLog = thrFiringSchmittConfig.onTimeOutMsg.recorder(samplingTime)
-    scSim.AddModelToTask(fswTaskName, mrpTorqueLog)
-    scSim.AddModelToTask(fswTaskName, attErrorLog)
-    scSim.AddModelToTask(fswTaskName, snTransLog)
-    scSim.AddModelToTask(fswTaskName, snAttLog)
-    scSim.AddModelToTask(fswTaskName, thrMapLog)
-    scSim.AddModelToTask(fswTaskName, thrTrigLog)
-
-    thrForceLog = []
-    for i in range(numTh):
-        thrForceLog.append(thrusterSet.thrusterOutMsgs[i].recorder(samplingTime))
-        scSim.AddModelToTask(fswTaskName, thrForceLog[i])
-
-    #
-    # create FSW simulation messages
-    #
-
-    # create the FSW vehicle configuration message
-
-    vehicleConfigOut = messaging.VehicleConfigMsgPayload()
-    vehicleConfigOut.ISCPntB_B = I  # use the same inertia in the FSW algorithm as in the simulation
-    vcMsg = messaging.VehicleConfigMsg().write(vehicleConfigOut)
-
-    # create the FSW Thruster configuration message
-    if useDVThrusters:
-        maxThrust = 22
-    else:
-        maxThrust = 1
-
-    # A `clearSetup()` should be called first to clear out any pre-existing devices from an
-    # earlier simulation run.  Next, the `maxThrust` value should be specified and used in the macro `create()`,
-    # together with the locations and directions, and looped through a for cycle to consider all the thrusters.
-    # The support macro `writeConfigMessage()` creates the required thrusters flight configuration message.
-    fswSetupThrusters.clearSetup()
-    for pos_B, dir_B in zip(location, direction):
-        fswSetupThrusters.create(pos_B, dir_B, maxThrust)
-    fswThrConfigMsg = fswSetupThrusters.writeConfigMessage()
-    # an alternate method to pull un-modifed SIM Thruster configuration and create the corresponding FSW
-    # configuration message is:
-    fswThrConfigMsg = thFactory.getConfigMessage()
+    armStateLog = spinningBody1.spinningBodyOutMsg.recorder()
+    scSim.AddModelToTask(dynTaskName, armStateLog)
+    armInertialStateLog = spinningBody1.spinningBodyConfigLogOutMsg.recorder()
+    scSim.AddModelToTask(dynTaskName, armInertialStateLog)
 
     #   set initial Spacecraft States
     #
@@ -586,19 +338,6 @@ def run(show_plots, useDVThrusters):
     scObject.hub.v_CN_NInit = vN  # m/s - v_CN_N
     scObject.hub.sigma_BNInit = [[0.1], [0.2], [-0.3]]  # sigma_BN_B
     scObject.hub.omega_BN_BInit = [[0.001], [-0.01], [0.03]]  # rad/s - omega_BN_B
-
-    # connect messages
-    sNavObject.scStateInMsg.subscribeTo(scObject.scStateOutMsg)
-    attErrorConfig.attNavInMsg.subscribeTo(sNavObject.attOutMsg)
-    attErrorConfig.attRefInMsg.subscribeTo(inertial3DConfig.attRefOutMsg)
-    mrpControlConfig.guidInMsg.subscribeTo(attErrorConfig.attGuidOutMsg)
-    mrpControlConfig.vehConfigInMsg.subscribeTo(vcMsg)
-    thrForceMappingConfig.cmdTorqueInMsg.subscribeTo(mrpControlConfig.cmdTorqueOutMsg)
-    thrForceMappingConfig.thrConfigInMsg.subscribeTo(fswThrConfigMsg)
-    thrForceMappingConfig.vehConfigInMsg.subscribeTo(vcMsg)
-    thrFiringSchmittConfig.thrConfInMsg.subscribeTo(fswThrConfigMsg)
-    thrFiringSchmittConfig.thrForceInMsg.subscribeTo(thrForceMappingConfig.thrForceCmdOutMsg)
-    thrusterSet.cmdsInMsg.subscribeTo(thrFiringSchmittConfig.onTimeOutMsg)
 
     # if this scenario is to interface with the BSK Viz, uncomment the following lines
     viz = vizSupport.enableUnityVisualization(scSim, dynTaskName,  scObject
@@ -622,49 +361,29 @@ def run(show_plots, useDVThrusters):
     #
     #   retrieve the logged data
     #
-    dataLr = mrpTorqueLog.torqueRequestBody
-    dataSigmaBR = attErrorLog.sigma_BR
-    dataOmegaBR = attErrorLog.omega_BR_B
-    dataMap = thrMapLog.thrForce
-    dataSchm = thrTrigLog.OnTimeRequest
-
-    dataThrust = []
-    for i in range(numTh):
-        dataThrust.append(np.array(thrForceLog[i].thrustForce))
-    dataThrust = np.stack(np.transpose(dataThrust))
+    armTheta = np.array(armStateLog.theta)
+    armThetaDot = np.array(armStateLog.thetaDot)
+    armInertialPosition = np.array(armInertialStateLog.r_BN_N)
+    armInertialVelocity = np.array(armInertialStateLog.v_BN_N)
+    armInertialAttitude = np.array(armInertialStateLog.sigma_BN)
+    armInertialAttRate = np.array(armInertialStateLog.omega_BN_B)
 
     np.set_printoptions(precision=16)
 
     #
     #   plot the results
     #
-    timeDataFSW = attErrorLog.times() * macros.NANO2MIN
+    timeData = armStateLog.times() * macros.NANO2MIN
     plt.close("all")  # clears out plots from earlier test runs
 
-    plot_requested_torque(timeDataFSW, dataLr)
+    plot_armTheta(timeData, armTheta, numTh)
     figureList = {}
-    pltName = fileName + "1" + str(int(useDVThrusters))
+    pltName = fileName + "theta history"
     figureList[pltName] = plt.figure(1)
 
-    plot_rate_error(timeDataFSW, dataOmegaBR)
-    pltName = fileName + "2" + str(int(useDVThrusters))
+    plot_armThetaDot(timeData, armThetaDot, numTh)
+    pltName = fileName + "thetaDot history"
     figureList[pltName] = plt.figure(2)
-
-    plot_attitude_error(timeDataFSW, dataSigmaBR)
-    pltName = fileName + "3" + str(int(useDVThrusters))
-    figureList[pltName] = plt.figure(3)
-
-    plot_thrForce(timeDataFSW, dataMap, numTh)
-    pltName = fileName + "4" + str(int(useDVThrusters))
-    figureList[pltName] = plt.figure(4)
-
-    plot_OnTimeRequest(timeDataFSW, dataSchm, numTh)
-    pltName = fileName + "5" + str(int(useDVThrusters))
-    figureList[pltName] = plt.figure(5)
-
-    plot_trueThrForce(timeDataFSW, dataThrust, numTh)
-    pltName = fileName + "6" + str(int(useDVThrusters))
-    figureList[pltName] = plt.figure(6)
 
     if show_plots:
         plt.show()
