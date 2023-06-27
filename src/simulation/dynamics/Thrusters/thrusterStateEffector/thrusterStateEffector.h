@@ -78,6 +78,8 @@ public:
     StateData *hubOmega;        //!< pointer to hub angular velocity states
     StateData* kappaState;      //!< -- state manager of theta for hinged rigid body
     Eigen::MatrixXd* inertialPositionProperty;  //!< [m] r_N inertial position relative to system spice zeroBase/refBase
+    StateData *attachedBodyTheta;               //!< pointer to arm angle state
+    StateData *attachedBodyThetaDot;            //!< pointer to arm angle rate state
 
     BSKLogger bskLogger;        //!< -- BSK Logging
 

@@ -119,6 +119,7 @@ from Basilisk.utilities import orbitalMotion
 from Basilisk.utilities import simIncludeGravBody
 from Basilisk.utilities import simIncludeThruster
 from Basilisk.utilities import unitTestSupport  # general support file with common unit test functions
+from Basilisk.utilities import RigidBodyKinematics
 # attempt to import vizard
 from Basilisk.utilities import vizSupport
 
@@ -127,6 +128,17 @@ fileName = os.path.basename(os.path.splitext(__file__)[0])
 
 
 # Plotting functions
+def plot_thrPosDiff(timedata, thrPosDiff):
+    """Plot the difference between thruster position and arm position"""
+    plt.figure(3)
+    for idx in range(3):
+        plt.plot(timedata, thrPosDiff[:, idx],
+                 color=unitTestSupport.getLineColor(idx, 3),
+                 label=r'thrPosDiff ' + str(idx))
+    plt.legend(loc='lower right')
+    plt.xlabel('Time [min]')
+    plt.ylabel(r'Thruster Position Diff')
+
 def plot_(timeDataFSW, dataSigmaBR):
     """Plot the attitude errors."""
     plt.figure(1)
@@ -251,7 +263,7 @@ def run(show_plots, useDVThrusters):
     scObject.hub.IHubPntBc_B = unitTestSupport.np2EigenMatrix3d(I)
 
     # add spacecraft object to the simulation process
-    scSim.AddModelToTask(dynTaskName, scObject)
+    scSim.AddModelToTask(dynTaskName, scObject, ModelPriority=20)
 
     # clear prior gravitational body and SPICE setup definitions
     gravFactory = simIncludeGravBody.gravBodyFactory()
@@ -270,7 +282,7 @@ def run(show_plots, useDVThrusters):
     scSim.AddModelToTask(dynTaskName, thrusterSet)
 
     # set the integrator to a variable time step of 7th-8th order
-    integratorObject = svIntegrators.svIntegratorRKF78(scObject)
+    integratorObject = svIntegrators.svIntegratorRK4(scObject)
     scObject.setIntegrator(integratorObject)
 
     # Make a fresh thruster factory instance, this is critical to run multiple times
@@ -280,36 +292,37 @@ def run(show_plots, useDVThrusters):
     spinningBody1 = spinningBodyOneDOFStateEffector.SpinningBodyOneDOFStateEffector()
     spinningBody1.mass = 100.0
     spinningBody1.IPntSc_S = [[100.0, 0.0, 0.0], [0.0, 50.0, 0.0], [0.0, 0.0, 50.0]]
-    spinningBody1.dcm_S0B = [[-1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]]
-    spinningBody1.r_ScS_S = [[0.5], [0.0], [1.0]]
-    spinningBody1.r_SB_B = [[1.5], [-0.5], [2.0]]
-    spinningBody1.sHat_S = [[0], [0], [1]]
+    spinningBody1.dcm_S0B = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]
+    spinningBody1.r_ScS_S = [[0.0], [0.0], [0.0]]
+    spinningBody1.r_SB_B = [[0], [2], [0]]
+    spinningBody1.sHat_S = [[0], [1], [0]]
 
-    spinningBody1.thetaInit = 5 * macros.D2R
-    spinningBody1.thetaDotInit = 1 * macros.D2R
+    spinningBody1.thetaInit = 3 * macros.D2R
+    spinningBody1.thetaDotInit = 2 * macros.D2R
 
     spinningBody1.k = 1.0
     spinningBody1.c = 0.5
 
     scObject.addStateEffector(spinningBody1)
+    scSim.AddModelToTask(dynTaskName, spinningBody1, ModelPriority=10)
 
     # create a thruster attached to a spinningBodyOneDOFStateEffector
     long_angle_rad = 30.0 * np.pi / 180.0
     lat_angle_rad = 15.0 * np.pi / 180.0
-    thruster2 = thrusterStateEffector.THRSimConfig()
-    thruster2.thrLoc_B = np.array([[1.], [0.0], [0.0]]).reshape([3, 1])
-    thruster2.thrDir_B = np.array(
+    thruster1 = thrusterStateEffector.THRSimConfig()
+    thruster1.thrLoc_B = np.array([[1.], [0.0], [0.0]]).reshape([3, 1])
+    thruster1.thrDir_B = np.array(
         [[np.cos(long_angle_rad + np.pi / 4.) * np.cos(lat_angle_rad - np.pi / 4.)],
             [np.sin(long_angle_rad + np.pi / 4.) * np.cos(lat_angle_rad - np.pi / 4.)],
             [np.sin(lat_angle_rad - np.pi / 4.)]]).reshape([3, 1])
-    thruster2.MaxThrust = 20.0
-    thruster2.steadyIsp = 226.7
-    thruster2.MinOnTime = 0.006
-    thruster2.cutoffFrequency = 2
-    thrusterSet.addThruster(thruster2, spinningBody1.spinningBodyConfigLogOutMsg)
+    thruster1.MaxThrust = 20.0
+    thruster1.steadyIsp = 226.7
+    thruster1.MinOnTime = 0.006
+    thruster1.cutoffFrequency = 2
+    thrusterSet.addThruster(thruster1, spinningBody1.spinningBodyConfigLogOutMsg)
 
     # get number of thruster devices
-    numTh = thFactory.getNumOfDevices()
+    numTh = 1
 
     # create thruster object container and tie to spacecraft object
     thrModelTag = "ACSThrusterDynamics"
@@ -318,10 +331,16 @@ def run(show_plots, useDVThrusters):
     #
     #   Setup data logging before the simulation is initialized
     #
+    scStateLog = scObject.scStateOutMsg.recorder()
+    scSim.AddModelToTask(dynTaskName,scStateLog)
     armStateLog = spinningBody1.spinningBodyOutMsg.recorder()
     scSim.AddModelToTask(dynTaskName, armStateLog)
     armInertialStateLog = spinningBody1.spinningBodyConfigLogOutMsg.recorder()
     scSim.AddModelToTask(dynTaskName, armInertialStateLog)
+    thrStateLog = []
+    for i in range(numTh):
+        thrStateLog.append(thrusterSet.thrusterOutMsgs[i].recorder())
+        scSim.AddModelToTask(dynTaskName, thrStateLog[i])
 
     #   set initial Spacecraft States
     #
@@ -329,15 +348,15 @@ def run(show_plots, useDVThrusters):
     oe = orbitalMotion.ClassicElements()
     oe.a = 10000000.0  # meters
     oe.e = 0.01
-    oe.i = 33.3 * macros.D2R
-    oe.Omega = 48.2 * macros.D2R
-    oe.omega = 347.8 * macros.D2R
-    oe.f = 85.3 * macros.D2R
+    oe.i = 0 * macros.D2R
+    oe.Omega = 90 * macros.D2R
+    oe.omega = 90 * macros.D2R
+    oe.f = 0 * macros.D2R
     rN, vN = orbitalMotion.elem2rv(mu, oe)
     scObject.hub.r_CN_NInit = rN  # m   - r_CN_N
     scObject.hub.v_CN_NInit = vN  # m/s - v_CN_N
     scObject.hub.sigma_BNInit = [[0.1], [0.2], [-0.3]]  # sigma_BN_B
-    scObject.hub.omega_BN_BInit = [[0.001], [-0.01], [0.03]]  # rad/s - omega_BN_B
+    scObject.hub.omega_BN_BInit = [[0], [0], [0]]  # rad/s - omega_BN_B
 
     # if this scenario is to interface with the BSK Viz, uncomment the following lines
     viz = vizSupport.enableUnityVisualization(scSim, dynTaskName,  scObject
@@ -358,22 +377,40 @@ def run(show_plots, useDVThrusters):
     scSim.ConfigureStopTime(simulationTime)
     scSim.ExecuteSimulation()
 
-    #
-    #   retrieve the logged data
-    #
+    # retrieve the logged data for the hub
+    r_BN_N = np.array(scStateLog.r_BN_N)
+    v_BN_N = np.array(scStateLog.v_BN_N)
+    sigma_BN = np.array(scStateLog.sigma_BN)
+
+    # retrieve the logged data for the arm
+    timeData = armStateLog.times() * macros.NANO2MIN
     armTheta = np.array(armStateLog.theta)
     armThetaDot = np.array(armStateLog.thetaDot)
-    armInertialPosition = np.array(armInertialStateLog.r_BN_N)
-    armInertialVelocity = np.array(armInertialStateLog.v_BN_N)
-    armInertialAttitude = np.array(armInertialStateLog.sigma_BN)
-    armInertialAttRate = np.array(armInertialStateLog.omega_BN_B)
+    r_ScN_N = np.array(armInertialStateLog.r_BN_N) # r_ScN_N
+    v_ScN_N = np.array(armInertialStateLog.v_BN_N) # v_ScN_N
+    sigma_SN = np.array(armInertialStateLog.sigma_BN) # sigma_SN
+    armInertialAttRate = np.array(armInertialStateLog.omega_BN_B) # omega_SN_S
+
+    # retrieve the logged data for the thruster
+    thrusterPosition = []
+    for i in range(numTh):
+        thrusterPosition.append(np.array(thrStateLog[i].thrusterLocation)) # r_FcS_S
 
     np.set_printoptions(precision=16)
+
+    # difference the thruster positions vs. the arm positions
+    thrusterPosDiff = np.zeros([len(timeData),3])
+    for i2 in range(len(timeData)):
+        # first get the body relative body frame arm position
+        r_ScB_N = r_ScN_N[i2] - r_BN_N[i2]
+        dcm_BN = RigidBodyKinematics.MRP2C(sigma_BN[i2])
+        r_ScN_N_tranposed = np.transpose(r_ScB_N)
+        r_ScB_B = dcm_BN.dot(r_ScB_N)
+        thrusterPosDiff[i2,:] = r_ScB_B - thrusterPosition[0][i2]
 
     #
     #   plot the results
     #
-    timeData = armStateLog.times() * macros.NANO2MIN
     plt.close("all")  # clears out plots from earlier test runs
 
     plot_armTheta(timeData, armTheta, numTh)
@@ -385,6 +422,10 @@ def run(show_plots, useDVThrusters):
     pltName = fileName + "thetaDot history"
     figureList[pltName] = plt.figure(2)
 
+    plot_thrPosDiff(timeData, thrusterPosDiff)
+    pltName = fileName + "thruster position difference"
+    figureList[pltName] = plt.figure(3)
+
     if show_plots:
         plt.show()
 
@@ -392,7 +433,6 @@ def run(show_plots, useDVThrusters):
     plt.close("all")
 
     return figureList
-
 
 #
 # This statement below ensures that the unit test scrip can be run as a

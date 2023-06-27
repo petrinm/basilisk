@@ -570,6 +570,7 @@ class SimBaseClass:
                 nextStopTime = nextLogTime
                 nextPriority = -1
             nextStopTime = nextStopTime if nextStopTime >= self.TotalSim.NextTaskTime else self.TotalSim.NextTaskTime
+            print('|||||||| -------- timestep end -------- ||||||||')
         self.terminate = False
         progressBar.markComplete()
         progressBar.close()

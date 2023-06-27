@@ -21,6 +21,7 @@
 #include "architecture/utilities/avsEigenSupport.h"
 #include "architecture/utilities/rigidBodyKinematics.h"
 #include <string>
+#include <iostream>
 
 /*! This is the constructor, setting variables to default values */
 SpinningBodyOneDOFStateEffector::SpinningBodyOneDOFStateEffector()
@@ -41,6 +42,7 @@ SpinningBodyOneDOFStateEffector::SpinningBodyOneDOFStateEffector()
 
     this->nameOfThetaState = "spinningBodyTheta" + std::to_string(SpinningBodyOneDOFStateEffector::effectorID);
     this->nameOfThetaDotState = "spinningBodyThetaDot" + std::to_string(SpinningBodyOneDOFStateEffector::effectorID);
+    //std::cout << "nameOfThetaState = " + this-> nameOfThetaDotState + "\n";
     SpinningBodyOneDOFStateEffector::effectorID++;
 }
 
@@ -84,7 +86,13 @@ void SpinningBodyOneDOFStateEffector::writeOutputStateMessages(uint64_t CurrentC
 
         // Logging the S frame is the body frame B of that object
         eigenVector3d2CArray(this->r_ScN_N, configLogMsg.r_BN_N);
-        // std::cout << "this is a test" + std::string(this->r_ScN_N) "\n";
+        std::cout << "-------- writeOutputStateMessages() -------- (spinningBodyOneDOFStateEffector messages as they are written out)\n";
+        std::cout.precision(10);
+        std::cout << "r_ScN_N\n" << this->r_ScN_N << "\n";
+        //std::cout << "r_ScS_B\n" << this->r_ScS_B << "\n";
+        //std::cout << "r_ScB_B\n" << this->r_ScB_B << "\n";
+        std::cout << "r_SB_B\n" << this->r_SB_B << "\n";
+        std::cout << "r_BN_N\n" << (Eigen::Vector3d)*this->inertialPositionProperty << "\n";
         eigenVector3d2CArray(this->v_ScN_N, configLogMsg.v_BN_N);
         eigenVector3d2CArray(this->sigma_SN, configLogMsg.sigma_BN);
         eigenVector3d2CArray(this->omega_SN_S, configLogMsg.omega_BN_B);
@@ -308,8 +316,12 @@ void SpinningBodyOneDOFStateEffector::computeSpinningBodyInertialStates()
     dcm_SN = (this->dcm_BS).transpose() * this->dcm_BN;
     this->sigma_SN = eigenMRPd2Vector3d(eigenC2MRP(dcm_SN));
 
+    // inertial attitude rate
+    this->omega_SN_S = (this->dcm_BS).transpose() * this->omega_SN_B;
+
     // inertial position vector
     this->r_ScN_N = (Eigen::Vector3d)*this->inertialPositionProperty + this->dcm_BN.transpose() * this->r_ScB_B;
+    //std::cout << "this is another test" << (Eigen::Vector3d)*this->inertialPositionProperty << "\n";
 
     // inertial velocity vector
     this->v_ScN_N = (Eigen::Vector3d)*this->inertialVelocityProperty + this->dcm_BN.transpose() * this->rDot_ScB_B;

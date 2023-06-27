@@ -137,6 +137,7 @@ void ThrusterStateEffector::writeOutputStateMessages(uint64_t CurrentClock)
     {
         tmpThruster = this->thrusterOutMsgs[idx]->zeroMsgPayload;
         eigenVector3d2CArray(it->thrLoc_B, tmpThruster.thrusterLocation);
+        //std::cout << "this is a thruster test thrLoc_B\n" << it->thrLoc_B << "\n";
         eigenVector3d2CArray(it->thrDir_B, tmpThruster.thrusterDirection);
         tmpThruster.maxThrust = it->MaxThrust;
         tmpThruster.thrustFactor = it->ThrustOps.ThrustFactor;
@@ -233,6 +234,12 @@ void ThrusterStateEffector::UpdateThrusterProperties()
             this->bodyToHubInfo.at(index).r_FB_B = dcm_BN * (r_FN_N - r_BN_N);
             this->bodyToHubInfo.at(index).dcm_BF = dcm_BF;
             this->bodyToHubInfo.at(index).omega_FB_B = dcm_BF * omega_FN_F - omega_BN_B;
+
+            std::cout << "-------- UpdateThrusterProperties() -------- (attached body state messages in thrusterStateEffector)\n";
+            std::cout.precision(10);
+            std::cout << "r_FN_N (r_ScN_N)\n" << r_FN_N << "\n";
+            std::cout << "r_BN_N (r_BN_N)\n" << r_BN_N << "\n";
+            std::cout << "r_FB_B (r_ScB_B)\n" << this->bodyToHubInfo.at(index).r_FB_B << "\n";
         }
     }
 }
@@ -284,6 +291,7 @@ void ThrusterStateEffector::addThruster(THRSimConfig* newThruster, Message<SCSta
     attachedBodyToHub.r_FB_B.setZero();
     attachedBodyToHub.omega_FB_B.setZero();
     this->bodyToHubInfo.push_back(attachedBodyToHub);
+    std::cout << "addThruster is now occuring\n";
 
     return;
 }
@@ -320,6 +328,14 @@ void ThrusterStateEffector::linkInStates(DynParamManager& states){
     this->hubSigma = states.getStateObject("hubSigma");
 	this->hubOmega = states.getStateObject("hubOmega");
     this->inertialPositionProperty = states.getPropertyReference(this->nameOfSpacecraftAttachedTo + "r_BN_N");
+    std::cout << "linkInStates is now occuring\n";
+    //if it->isLinked()
+    if (true)
+    {
+        this->attachedBodyTheta = states.getStateObject("spinningBodyTheta1");
+        this->attachedBodyThetaDot = states.getStateObject("spinningBodyThetaDot1");
+        std::cout << "confirming spinningBodyThetaState " << this->attachedBodyTheta->getState() << "\n";
+    }
 }
 
 /*! This method allows the thruster state effector to register its state kappa with the dyn param manager */
@@ -419,6 +435,12 @@ void ThrusterStateEffector::calcForceTorqueOnBody(double integTime, Eigen::Vecto
         // Compute the thruster properties wrt the hub (note that B refers to the F frame when extracting from the thruster info)
         thrustDirection_B = this->bodyToHubInfo.at(index).dcm_BF * it->thrDir_B;
         thrustLocation_B = this->bodyToHubInfo.at(index).r_FB_B + this->bodyToHubInfo.at(index).dcm_BF * it->thrLoc_B;
+
+        std::cout << "-------- calcForceTorqueOnBody() -------- (thruster position calc in thrusterStateEffector)\n";
+        std::cout << "thrLoc_B (r_FcS_S)\n" << it->thrLoc_B << "\n";
+        std::cout << "r_FB_B (r_ScB_B)\n" << this->bodyToHubInfo.at(index).r_FB_B << "\n";
+        std::cout << "thrusterLocation_B (r_FcB_B)\n" << thrustLocation_B << "\n";
+        std::cout << "dcm_BF\n" << this->bodyToHubInfo.at(index).dcm_BF << "\n";
 
         //! - For each thruster, aggregate the current thrust direction into composite body force
         tmpThrustMag = it->MaxThrust * ops->ThrustFactor;
