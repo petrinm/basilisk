@@ -314,3 +314,156 @@ def plot_rel_orbit(timeData, r_chief, r_deputy, id=None, livePlot=False):
     if not livePlot:
         plt.legend()
     plt.grid()
+
+
+def plot_position(time, r_BN_N_truth, r_BN_N_meas, tTN, r_TN_N, id=None):
+    """Plot the position result."""
+    fig, ax = plt.subplots(3, sharex=True, num=id)
+    fig.add_subplot(111, frameon=False)
+    plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+
+    ax[0].plot(time, r_BN_N_meas[:, 0], 'k*', label='measurement', markersize=2)
+    ax[1].plot(time, r_BN_N_meas[:, 1], 'k*', markersize=2)
+    ax[2].plot(time, r_BN_N_meas[:, 2], 'k*', markersize=2)
+
+    ax[0].plot(time, r_BN_N_truth[:, 0], label='truth')
+    ax[1].plot(time, r_BN_N_truth[:, 1])
+    ax[2].plot(time, r_BN_N_truth[:, 2])
+
+    ax[0].plot(tTN, r_TN_N[0], 'rx', label='target')
+    ax[1].plot(tTN, r_TN_N[1], 'rx')
+    ax[2].plot(tTN, r_TN_N[2], 'rx')
+
+    plt.xlabel('Time [min]')
+    plt.title('Spacecraft Position')
+
+    ax[0].set_ylabel('${}^Nr_{BN_1}$ [m]')
+    ax[1].set_ylabel('${}^Nr_{BN_2}$ [m]')
+    ax[2].set_ylabel('${}^Nr_{BN_3}$ [m]')
+
+    ax[0].legend(loc='upper right')
+
+
+def plot_velocity(time, v_BN_N_truth, v_BN_N_meas, id=None):
+    """Plot the velocity result."""
+    fig, ax = plt.subplots(3, sharex=True, num=id)
+    fig.add_subplot(111, frameon=False)
+    plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+
+    ax[0].plot(time, v_BN_N_meas[:, 0], 'k*', label='measurement', markersize=2)
+    ax[1].plot(time, v_BN_N_meas[:, 1], 'k*', markersize=2)
+    ax[2].plot(time, v_BN_N_meas[:, 2], 'k*', markersize=2)
+
+    ax[0].plot(time, v_BN_N_truth[:, 0], label='truth')
+    ax[1].plot(time, v_BN_N_truth[:, 1])
+    ax[2].plot(time, v_BN_N_truth[:, 2])
+
+    plt.xlabel('Time [min]')
+    plt.title('Spacecraft Velocity')
+
+    ax[0].set_ylabel('${}^Nv_{BN_1}$ [m/s]')
+    ax[1].set_ylabel('${}^Nv_{BN_2}$ [m/s]')
+    ax[2].set_ylabel('${}^Nv_{BN_3}$ [m/s]')
+
+    ax[0].legend()
+
+
+def plot_surface_rel_velocity(timeData, r_BN_N, v_BN_N, sigma_PN, omega_PN_P, id=None):
+    v_BS_S = np.empty([len(r_BN_N), 3])
+    for idx in range(0, len(r_BN_N)):
+        dcmPN = RigidBodyKinematics.MRP2C(sigma_PN[idx])
+        omega_PN_N = np.dot(dcmPN.transpose(), omega_PN_P[idx])
+        s1Hat_N = np.cross(omega_PN_N, r_BN_N[idx])/np.linalg.norm(np.cross(omega_PN_N, r_BN_N[idx]))
+        s3Hat_N = r_BN_N[idx]/np.linalg.norm(r_BN_N[idx])
+        s2Hat_N = np.cross(s3Hat_N, s1Hat_N)/np.linalg.norm(np.cross(s3Hat_N, s1Hat_N))
+        dcmSN = np.array([s1Hat_N.transpose(), s2Hat_N.transpose(), s3Hat_N.transpose()])
+        v_BS_S[idx] = np.dot(dcmSN, v_BN_N[idx] - np.cross(omega_PN_N, r_BN_N[idx]))
+
+    fig, ax = plt.subplots(3, sharex=True, num=id)
+    fig.add_subplot(111, frameon=False)
+    plt.tick_params(labelcolor='none', top=False, bottom=False, left=False, right=False)
+
+    ax[0].plot(timeData, v_BS_S[:, 0])
+    ax[1].plot(timeData, v_BS_S[:, 1])
+    ax[2].plot(timeData, v_BS_S[:, 2])
+
+    plt.xlabel('Time [min]')
+    plt.title('Surface Relative Velocity')
+
+    ax[0].set_ylabel('${}^Sv_{BS_1}$ [m/s]')
+    ax[1].set_ylabel('${}^Sv_{BS_2}$ [m/s]')
+    ax[2].set_ylabel('${}^Sv_{BS_3}$ [m/s]')
+
+def plot_dv_orientation(timeLineSet, r_BN_N, dvData, sigma_BN, id=None):
+    data = np.empty([len(r_BN_N), 3])
+    for idx in range(0, len(r_BN_N)):
+        i1 = dvData[idx] / np.linalg.norm(dvData[idx])
+        hdv = np.cross(r_BN_N[idx], dvData[idx])
+        i2 = hdv / np.linalg.norm(hdv)
+        i3 = np.cross(i1, i2)
+        dcmBN = RigidBodyKinematics.MRP2C(sigma_BN[idx])
+        data[idx] = [np.dot(i1, dcmBN[0]), np.dot(i1, dcmBN[1]), np.dot(i1, dcmBN[2])]
+    plt.figure(id)
+    labelStrings = (r'$\hat\imath_{dv}\cdot \hat b_1$'
+                    , r'${\hat\imath}_{dv}\cdot \hat b_2$'
+                    , r'$\hat\imath_{dv}\cdot \hat b_3$')
+    for idx in range(0, 3):
+        plt.plot(timeLineSet, data[:, idx],
+                 color=unitTestSupport.getLineColor(idx, 3),
+                 label=labelStrings[idx])
+    plt.legend(loc='lower right')
+    plt.xlabel('Time [min]')
+    plt.ylabel('Orientation Illustration')
+
+def plot_dv_command(timeLineSet, dvData, id=None):
+    plt.figure(id)
+    labelStrings = (r'$\hat n_{1}$'
+                    , r'${\hat n}_{2}$'
+                    , r'$\hat n_{3}$')
+    for idx in range(0, 3):
+        plt.plot(timeLineSet, dvData[:, idx],
+                 color=unitTestSupport.getLineColor(idx, 3),
+                 label=labelStrings[idx])
+    plt.legend(loc='lower right')
+    plt.xlabel('Time [min]')
+    plt.ylabel('Delta-V Command [m/s]')
+
+def plot_dv_accumulation(timeLineSet, DVaccum_B, sigma_BN, id=None):
+    DVaccum_N = np.empty([len(DVaccum_B), 3])
+    for idx in range(0, len(DVaccum_B)):
+        dcmBN = RigidBodyKinematics.MRP2C(sigma_BN[idx])
+        DVaccum_N[idx] = np.dot(dcmBN.transpose(), DVaccum_B[idx])
+
+    plt.figure(id)
+    labelStrings = (r'$\hat n_{1}$'
+                    , r'${\hat n}_{2}$'
+                    , r'$\hat n_{3}$')
+    for idx in range(0, 3):
+        plt.plot(timeLineSet, DVaccum_N[:, idx],
+                 color=unitTestSupport.getLineColor(idx, 3),
+                 label=labelStrings[idx])
+    plt.legend(loc='lower right')
+    plt.xlabel('Time [min]')
+    plt.ylabel('Accumulated Delta-V [m/s]')
+
+def plot_thrOnTime(timeLineSet, thrusterData, numThrusters, id=None):
+    plt.figure(id)
+    for idx in range(0, numThrusters):
+        label = 'Thr' + str(idx+1)
+        plt.plot(timeLineSet, thrusterData[:, idx],
+                 color=unitTestSupport.getLineColor(idx, numThrusters),
+                 label=label)
+    plt.legend(loc='lower right')
+    plt.xlabel('Time [min]')
+    plt.ylabel('Thruster On Time [s]')
+
+def plot_thrForce(timeLineSet, thrusterData, numThrusters, id=None):
+    plt.figure(id)
+    for idx in range(0, numThrusters):
+        label = 'Thr' + str(idx+1)
+        plt.plot(timeLineSet, thrusterData[:, idx],
+                 color=unitTestSupport.getLineColor(idx, numThrusters),
+                 label=label)
+    plt.legend(loc='lower right')
+    plt.xlabel('Time [min]')
+    plt.ylabel('Thruster Force [N]')
