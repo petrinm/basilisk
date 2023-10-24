@@ -117,6 +117,19 @@ public:
         this->headerPointer->isLinked = 1;  // set source output message as linked
     };
 
+    void subscribeToAddr(uint64_t sourceAddr)
+    {
+        Message<messageType> *source = 
+            reinterpret_cast<Message<messageType> *> (sourceAddr);
+	subscribeTo(source);
+    }
+
+    void subscribeToCAddr(uint64_t sourceAddr)
+    {
+        void *source = reinterpret_cast<void *> (sourceAddr);
+        subscribeToC(source);
+    }
+
     //! Subscribe to a C++ message
     void subscribeTo(Message<messageType> *source){
         *this = source->addSubscriber();
