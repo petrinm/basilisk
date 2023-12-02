@@ -225,6 +225,10 @@ default setting for that behavior.
     * - ``keyboardLiveInput``
       - string
       - string of alphanumeric key inputs to listen for during 2-way communication
+    * - ``messageBufferSize``
+      - int
+      - [bytes] Maximum size of vizMessages to be loaded into memory at one time,
+        -1 to force loading of entire file into memory, 0 to use viz default
 
 
 While the prior settings are only read once during start up, the following settings are checked
