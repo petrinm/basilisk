@@ -123,3 +123,11 @@ int8_t {type}_cpp_isSubscribedTo({type}_C *subscriber, void* source) {{
     return (firstCheck && secondCheck);
     
 }};
+
+//! Cpp interface to check if subscriber is indeed subscribed to a message-address (1: subscribed, 0: not subscribed)
+int8_t {type}_cpp_isSubscribedToAddr({type}_C *subscriber, uint64_t sourceAddr) {{
+
+    void *source = reinterpret_cast<void*> (sourceAddr);
+    return ({type}_cpp_isSubscribedTo(subscriber, source));
+
+}};
