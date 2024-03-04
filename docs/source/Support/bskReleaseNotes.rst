@@ -51,6 +51,8 @@ Version |release|
 - Added time tag to :ref:`CSSArraySensorMsgPayload`
 - updated Eigen library to 3.4.0
 - updated OpenCV library to 4.5.5
+- updated the BSK install script to check if the full ``de430.bsp`` file was downloaded.  This addressed
+  a common BSK installation issue where the user doesn't install ``lfs`` first before cloning the repo.
 
 
 Version 2.3.0 (April 5, 2024)
