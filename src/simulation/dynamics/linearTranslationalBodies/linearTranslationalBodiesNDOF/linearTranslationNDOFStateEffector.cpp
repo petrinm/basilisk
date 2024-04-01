@@ -166,19 +166,18 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
 
         // Write the spinning axis in B frame
         translatingBody.fHat_B = translatingBody.dcm_BF * translatingBody.fHat_F;
+        translatingBody.r_FF0_B = translatingBody.rho * translatingBody.fHat_B;
 
         // Compute the effector's CoM with respect to point B
         translatingBody.r_FcF_B = translatingBody.dcm_BF * translatingBody.r_FcF_F;
+        translatingBody.r_FP_B = translatingBody.r_F0P_P + translatingBody.r_FF0_B;
         if (i == 0) {
         // parent frame of first body is b frame
-            translatingBody.r_FP_B = translatingBody.r_FP_P;
             translatingBody.r_FB_B = translatingBody.r_FP_P;
-            translatingBody.r_FcB_B = translatingBody.r_FcF_B + translatingBody.r_FB_B;
         } else {
-            translatingBody.r_FP_B = this->translatingBodyVec[i-1].dcm_BF * translatingBody.r_FP_P;
             translatingBody.r_FB_B = translatingBody.r_FP_B + this->translatingBodyVec[i-1].r_FB_B;
-            translatingBody.r_FcB_B = translatingBody.r_FcF_B + translatingBody.r_FB_B;
         }
+        translatingBody.r_FcB_B = translatingBody.r_FcF_B + translatingBody.r_FB_B;
         this->effProps.rEff_CB_B += translatingBody.mass * translatingBody.r_FcB_B;
 
         // Find the inertia of the bodies about point B
@@ -188,15 +187,13 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
 
         // Find rPrime_Sc1B_B and rPrime_Sc2B_B
                 // BN_B or FN_B check
-        Eigen::Matrix3d omegaTilde_FN_B = eigenTilde(translatingBody.omega_FN_B);
-        translatingBody.rPrime_FcF_B = omegaTilde_FN_B * translatingBody.r_FcF_B;
+        Eigen::Matrix3d omegaTilde_FB_B = Eigen::Matrix3d::Zero();
+        translatingBody.rPrime_FcF_B = Eigen::Vector3d::Zero();
+        translatingBody.rPrime_FF0_B = translatingBody.rhoDot * translatingBody.fHat_B;
+        translatingBody.rPrime_FP_B = translatingBody.rPrime_FF0_B;
         if (i == 0) {
-            translatingBody.rPrime_FP_B = Eigen::Vector3d::Zero();
             translatingBody.rPrime_FB_B = translatingBody.rPrime_FP_B;
         } else {
-        // todo if else could be an issue
-//            translatingBody.rPrime_FP_B = Eigen::Vector3d::Zero();
-            translatingBody.rPrime_FP_B = this->translatingBodyVec[i-1].omegaTilde_FB_B * translatingBody.r_FP_B;
             translatingBody.rPrime_FB_B = translatingBody.rPrime_FP_B + this->translatingBodyVec[i-1].rPrime_FB_B;
         }
         translatingBody.rPrime_FcB_B = translatingBody.rPrime_FcF_B + translatingBody.rPrime_FB_B;
@@ -204,9 +201,9 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
 
         // Find the body-frame time derivative of the inertias of each arm and the entire spacecraft
         // todo BN_B or FN_B check
-        translatingBody.IPrimePntFc_B = omegaTilde_FN_B * translatingBody.IPntFc_B - translatingBody.IPntFc_B * omegaTilde_FN_B;
-        Eigen::Matrix3d rPrimeTilde_PcB_B = eigenTilde(translatingBody.rPrime_FcB_B);
-        this->effProps.IEffPrimePntB_B += translatingBody.IPrimePntFc_B - translatingBody.mass * (rPrimeTilde_PcB_B * translatingBody.rTilde_FcB_B + translatingBody.rTilde_FcB_B * rPrimeTilde_PcB_B);
+        translatingBody.IPrimePntFc_B = Eigen::Matrix3d::Zero();
+        Eigen::Matrix3d rPrimeTilde_FcB_B = eigenTilde(translatingBody.rPrime_FcB_B);
+        this->effProps.IEffPrimePntB_B += translatingBody.IPrimePntFc_B - translatingBody.mass * (rPrimeTilde_FcB_B * translatingBody.rTilde_FcB_B + translatingBody.rTilde_FcB_B * rPrimeTilde_FcB_B);
 
         i++;
     }

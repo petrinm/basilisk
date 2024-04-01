@@ -34,12 +34,10 @@
 #include "architecture/messaging/messaging.h"
 
 struct translatingBody {
-    // Body quantities
     double mass = 0.0;
     Eigen::Matrix3d IPntFc_F = Eigen::Matrix3d::Zero();           //!< [kg-m^2] Inertia of body about point Pc in P frame components
     Eigen::Vector3d r_FcF_F = Eigen::Vector3d::Zero();           //!< [m] vector pointing from translating frame P origin to point Pc (center of mass of arm) in P frame components
-
-    // Hinge quantities
+    Eigen::Vector3d r_F0P_P = Eigen::Vector3d::Zero();
     Eigen::Vector3d fHat_F = Eigen::Vector3d::Zero();         //!< -- translating axis in P frame components.
     double k = 0.0;                                           //!< [N-m/rad] torsional spring constant
     double c = 0.0;                                           //!< [N-m-s/rad] rotational damping coefficient
@@ -53,6 +51,7 @@ struct translatingBody {
     int lockFlag;
 
     // Vector quantities
+    Eigen::Vector3d r_FF0_B;
     Eigen::Vector3d fHat_B;                                     //!< -- translating axis in B frame components.
     Eigen::Vector3d r_FcF_B;            //!< [m] vector pointing from translating frame P origin to point Pc (center of mass of arm) in B frame components
     Eigen::Vector3d r_FB_B;             //!< [m] vector pointing from body frame B origin to P frame origin in B frame components
@@ -65,11 +64,13 @@ struct translatingBody {
     Eigen::Vector3d r_FP_B;        //!< [m/s] vector from parent frame to current F frame
     Eigen::Vector3d r_FP_P;        //!< [m/s] vector from parent frame to current F frame
     Eigen::Vector3d rPrime_FP_B;        //!< [m/s] vector from parent frame to current F frame
+    Eigen::Vector3d rPrime_FF0_B;
 
 // STILL USE THIS
 // todo,update omega in doc and code
     Eigen::Vector3d omega_FN_B;        //!< [rad/s] angular velocity of the P frame wrt the N frame in B frame components
     Eigen::Vector3d omega_SB_B; // zero for all bodies
+    Eigen::Matrix3d omegaTilde_FB_B;
 
     // Matrix quantities
 // todo double check all dcm for right convention
