@@ -195,8 +195,8 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
             translatingBody.rPrime_FB_B = translatingBody.rPrime_FP_B;
         } else {
         // todo if else could be an issue
-            translatingBody.rPrime_FP_B = Eigen::Vector3d::Zero();
-            // translatingBody.rPrime_FP_B = this->translatingBodyVec[i-1].omegaTilde_FB_B * translatingBody.r_FP_B;
+//            translatingBody.rPrime_FP_B = Eigen::Vector3d::Zero();
+            translatingBody.rPrime_FP_B = this->translatingBodyVec[i-1].omegaTilde_FB_B * translatingBody.r_FP_B;
             translatingBody.rPrime_FB_B = translatingBody.rPrime_FP_B + this->translatingBodyVec[i-1].rPrime_FB_B;
         }
         translatingBody.rPrime_FcB_B = translatingBody.rPrime_FcF_B + translatingBody.rPrime_FB_B;
@@ -229,17 +229,14 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     // update omega_Pn_B
 
     // Map gravity to body frame
-    Eigen::Vector3d gLocal_N;
     Eigen::Vector3d g_B;
-    gLocal_N = g_N;
-    g_B = this->dcm_BN * gLocal_N;
+    g_B = this->dcm_BN * g_N;
 
     // Compute MRho
     Eigen::MatrixXd MRho(this->N, this->N);
     for (int n = 0; n<this->N; n++) {
         for (int i = 0; i<this->N; i++) {
             MRho(n,i) = 0.0;
-            // CHECK
             for (int j = n; j<this->N; j++) {
                 MRho(n,i) += this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[j].mass
                     * this->translatingBodyVec[i].fHat_B;
@@ -254,7 +251,6 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     for (int n = 0; n<this->N; n++) {
         ARhoStar.row(n) = Eigen::Vector3d::Zero().transpose();
         BRhoStar.row(n) = Eigen::Vector3d::Zero().transpose();
-        // WHAT IS IS INITIALIZATION
         CRhoStar(n, 0) = this->translatingBodyVec[n].u
                            - this->translatingBodyVec[n].k * this->translatingBodyVec[n].rho
                            - this->translatingBodyVec[n].c * this->translatingBodyVec[n].rhoDot;
@@ -265,8 +261,10 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
 
             ARhoStar.row(n) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass;
             BRhoStar.row(n) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass * rTilde_FciB_B;
-            CRhoStar(n, 0) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass *
-                              (omegaTilde_BN_B*omegaTilde_BN_B*r_FciB_B + 2*omegaTilde_BN_B * rPrime_FciB_B);
+//            CRhoStar(n, 0) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass *
+//                              (omegaTilde_BN_B*omegaTilde_BN_B*r_FciB_B + 2*omegaTilde_BN_B * rPrime_FciB_B);
+            CRhoStar(n, 0) += this->translatingBodyVec[n].fHat_B.transpose() * (g_B - this->translatingBodyVec[i].mass *
+                              (omegaTilde_BN_B * omegaTilde_BN_B * r_FciB_B + 2 * omegaTilde_BN_B * rPrime_FciB_B));
         }
     }
 

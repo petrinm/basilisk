@@ -29,7 +29,7 @@ import numpy as np
 import pytest
 import numpy
 import matplotlib.pyplot as plt
-plt.rcParams['text.usetex'] = True
+# plt.rcParams['text.usetex'] = True
 
 filename = inspect.getframeinfo(inspect.currentframe()).filename
 path = os.path.dirname(os.path.abspath(filename))
@@ -104,15 +104,19 @@ def translatingBody(show_plots):
 
     # define properties
     translatingBody1 = linearTranslationNDOFStateEffector.translatingBody()
-    translatingBody1.mass = 100.0
-    translatingBody1.IPntFc_F = [[100.0, 0.0, 0.0], [0.0, 50.0, 0.0], [0.0, 0.0, 50.0]]
-    translatingBody1.dcm_BF = [[-1.0, 0.0, 0.0], [0.0, -1.0, 0.0], [0.0, 0.0, 1.0]]
-    translatingBody1.r_FcF_F = [[2.0], [-0.5], [0.0]]
-    translatingBody1.r_FP_P = [[-2.0], [0.5], [-1.0]]
+    translatingBody1.mass = 20.0
+    translatingBody1.IPntFc_F = [[50.0, 0.0, 0.0],
+                                [0.0, 80.0, 0.0],
+                                [0.0, 0.0, 60.0]]
+    translatingBody1.dcm_BF = [[0.0, -1.0, 0.0],
+                              [0.0, 0.0, -1.0],
+                              [1.0, 0.0, 0.0]]
+    translatingBody1.r_FcF_F = [[-1.0], [1.0], [0.0]]
+    translatingBody1.r_FP_P = [[-5.0], [4.0], [3.0]]
     translatingBody1.fHat_F = [[0], [0], [1]]
-    translatingBody1.rhoInit = 0.0
-    translatingBody1.rhoDotInit = 2.0
-    translatingBody1.k = 1.0
+    translatingBody1.rhoInit = 1.0
+    translatingBody1.rhoDotInit = 0.05
+    translatingBody1.k = 100.0
     translatingBodyEffector.addTranslatingBody(translatingBody1)
 
     # Add body to spacecraft
@@ -181,7 +185,8 @@ def translatingBody(show_plots):
     # rho3Dot = rho3Data.rhoDot
     # rho4 = rho4Data.rho
     # rho4Dot = rho4Data.rhoDot
-    breakpoint()
+
+    # breakpoint()
 
     # Set up the conservation quantities
     timeSec = scObjectLog.times() * 1e-9
