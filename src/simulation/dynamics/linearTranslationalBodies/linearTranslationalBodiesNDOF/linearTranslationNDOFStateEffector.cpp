@@ -56,7 +56,7 @@ void linearTranslationNDOFStateEffector::Reset(uint64_t CurrentClock)
             translatingBody.fHat_F.normalize();
         }
         else {
-            bskLogger.bskLog(BSK_ERROR, "Norm of fHat must be greater than 0. sHat may not have been set by the user.");
+//            bskLogger.bskLog(BSK_ERROR, "Norm of fHat must be greater than 0. sHat may not have been set by the user.");
         }
     }
 }
@@ -165,16 +165,20 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
         translatingBody.rhoDot = this->rhoDotState->getState()(i, 0);
 
         // Write the spinning axis in B frame
-        translatingBody.fHat_B = translatingBody.dcm_BF * translatingBody.fHat_F;
+        // translatingBody.fHat_B = translatingBody.dcm_FB.transpose() * translatingBody.fHat_F;
         translatingBody.r_FF0_B = translatingBody.rho * translatingBody.fHat_B;
 
+
         // Compute the effector's CoM with respect to point B
-        translatingBody.r_FcF_B = translatingBody.dcm_BF * translatingBody.r_FcF_F;
-        translatingBody.r_FP_B = translatingBody.r_F0P_P + translatingBody.r_FF0_B;
+        translatingBody.r_FcF_B = translatingBody.dcm_FB.transpose() * translatingBody.r_FcF_F;
         if (i == 0) {
         // parent frame of first body is b frame
-            translatingBody.r_FB_B = translatingBody.r_FP_P;
+            translatingBody.r_F0P_B = translatingBody.r_F0P_P;
+            translatingBody.r_FP_B = translatingBody.r_F0P_B + translatingBody.r_FF0_B;
+            translatingBody.r_FB_B = translatingBody.r_FP_B;
         } else {
+            translatingBody.r_F0P_B = this->translatingBodyVec[i-1].dcm_FB.transpose() * translatingBody.r_F0P_P;
+            translatingBody.r_FP_B = translatingBody.r_F0P_B + translatingBody.r_FF0_B;
             translatingBody.r_FB_B = translatingBody.r_FP_B + this->translatingBodyVec[i-1].r_FB_B;
         }
         translatingBody.r_FcB_B = translatingBody.r_FcF_B + translatingBody.r_FB_B;
@@ -182,7 +186,7 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
 
         // Find the inertia of the bodies about point B
         translatingBody.rTilde_FcB_B = eigenTilde(translatingBody.r_FcB_B);
-        translatingBody.IPntFc_B = translatingBody.dcm_BF * translatingBody.IPntFc_F * translatingBody.dcm_BF.transpose();
+        translatingBody.IPntFc_B = translatingBody.dcm_FB.transpose() * translatingBody.IPntFc_F * translatingBody.dcm_FB.transpose().transpose();
         this->effProps.IEffPntB_B += translatingBody.IPntFc_B - translatingBody.mass * translatingBody.rTilde_FcB_B * translatingBody.rTilde_FcB_B;
 
         // Find rPrime_Sc1B_B and rPrime_Sc2B_B
@@ -347,10 +351,10 @@ void linearTranslationNDOFStateEffector::computeTranslatingBodyInertialStates()
     for(auto& translatingBody: this->translatingBodyVec) {
         // Compute the rotational properties
         Eigen::Matrix3d dcm_FN;
-        dcm_FN = translatingBody.dcm_BF.transpose() * this->dcm_BN;
+        dcm_FN = translatingBody.dcm_FB.transpose().transpose() * this->dcm_BN;
         translatingBody.sigma_FN = eigenMRPd2Vector3d(eigenC2MRP(dcm_FN));
         // maybe should be pnb and set pnb = bnb earlier somewhere (forgot where)
-        translatingBody.omega_FN_F = translatingBody.dcm_BF.transpose() * translatingBody.omega_FN_B;
+        translatingBody.omega_FN_F = translatingBody.dcm_FB.transpose().transpose() * translatingBody.omega_FN_B;
 
         // Compute the translation properties
         translatingBody.r_FcN_N = (Eigen::Vector3d)*this->inertialPositionProperty + this->dcm_BN.transpose() * translatingBody.r_FcB_B;

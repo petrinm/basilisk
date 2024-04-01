@@ -52,6 +52,7 @@ struct translatingBody {
 
     // Vector quantities
     Eigen::Vector3d r_FF0_B;
+    Eigen::Vector3d r_F0P_B;
     Eigen::Vector3d fHat_B;                                     //!< -- translating axis in B frame components.
     Eigen::Vector3d r_FcF_B;            //!< [m] vector pointing from translating frame P origin to point Pc (center of mass of arm) in B frame components
     Eigen::Vector3d r_FB_B;             //!< [m] vector pointing from body frame B origin to P frame origin in B frame components
@@ -74,7 +75,7 @@ struct translatingBody {
 
     // Matrix quantities
 // todo double check all dcm for right convention
-    Eigen::Matrix3d dcm_BF;            //!< -- DCM from P frame to body frame
+    Eigen::Matrix3d dcm_FB;            //!< -- DCM from P frame to body frame
     Eigen::Matrix3d IPntFc_B;          //!< -- [kg-m^2] Inertia of body about point Pc in B frame components
     Eigen::Matrix3d IPrimePntFc_B;     //!< [kg-m^2] Inertia of body about point Pc in B frame components
     Eigen::Matrix3d rTilde_FcB_B;      //!< [m] tilde matrix of r_Sc2B_B
