@@ -29,6 +29,7 @@ import numpy as np
 import pytest
 import numpy
 import matplotlib.pyplot as plt
+
 # plt.rcParams['text.usetex'] = True
 
 filename = inspect.getframeinfo(inspect.currentframe()).filename
@@ -106,14 +107,14 @@ def translatingBody(show_plots):
     translatingBody1 = linearTranslationNDOFStateEffector.translatingBody()
     translatingBody1.mass = 20.0
     translatingBody1.IPntFc_F = [[50.0, 0.0, 0.0],
-                                [0.0, 80.0, 0.0],
-                                [0.0, 0.0, 60.0]]
-    translatingBody1.dcm_FB = [[0.0, -1.0, 0.0],
-                              [0.0, 0.0, -1.0],
-                              [1.0, 0.0, 0.0]]  # change this to FP
+                                 [0.0, 80.0, 0.0],
+                                 [0.0, 0.0, 60.0]]
+    translatingBody1.dcm_FP = [[1.0, 0.0, 0.0],
+                               [0.0, 1.0, 0.0],
+                               [0.0, 0.0, 1.0]]  # change this to FP
     translatingBody1.r_FcF_F = [[-1.0], [1.0], [0.0]]
     translatingBody1.r_F0P_P = [[-5.0], [4.0], [3.0]]
-    translatingBody1.fHat_B = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
+    translatingBody1.fHat_P = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
     translatingBody1.rhoInit = 1.0
     translatingBody1.rhoDotInit = 0.05
     translatingBody1.k = 100.0
@@ -122,14 +123,14 @@ def translatingBody(show_plots):
     translatingBody2 = linearTranslationNDOFStateEffector.translatingBody()
     translatingBody2.mass = 20.0
     translatingBody2.IPntFc_F = [[70.0, 0.0, 0.0],
-                                [0.0, 50.0, 0.0],
-                                [0.0, 0.0, 60.0]]
-    translatingBody2.dcm_FB = [[1.0, 0.0, 0.0],
-                              [0.0, 1.0, 0.0],
-                              [0.0, 0.0, 1.0]]  # change this to FP
+                                 [0.0, 50.0, 0.0],
+                                 [0.0, 0.0, 60.0]]
+    translatingBody2.dcm_FP = [[1.0, 0.0, 0.0],
+                               [0.0, 1.0, 0.0],
+                               [0.0, 0.0, 1.0]]  # change this to FP
     translatingBody2.r_FcF_F = [[-1.0], [1.0], [0.0]]
     translatingBody2.r_F0P_P = [[-5.0], [4.0], [3.0]]
-    translatingBody2.fHat_B = [[0.0], [4.0 / 5.0], [3.0 / 5.0]]  # change this to P
+    translatingBody2.fHat_P = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
     translatingBody2.rhoInit = 1.0
     translatingBody2.rhoDotInit = 0.05
     translatingBody2.k = 100.0
@@ -138,34 +139,34 @@ def translatingBody(show_plots):
     translatingBody3 = linearTranslationNDOFStateEffector.translatingBody()
     translatingBody3.mass = 20.0
     translatingBody3.IPntFc_F = [[40.0, 0.0, 0.0],
-                                [0.0, 60.0, 0.0],
-                                [0.0, 0.0, 50.0]]
-    translatingBody3.dcm_FB = [[0.0, 1.0, 0.0],
-                              [0.0, 0.0, -1.0],
-                              [-1.0, 0.0, 0.0]]  # change this to FP
+                                 [0.0, 60.0, 0.0],
+                                 [0.0, 0.0, 50.0]]
+    translatingBody3.dcm_FP = [[1.0, 0.0, 0.0],
+                               [0.0, 1.0, 0.0],
+                               [0.0, 0.0, 1.0]]  # change this to FP
     translatingBody3.r_FcF_F = [[-1.0], [1.0], [0.0]]
     translatingBody3.r_F0P_P = [[-5.0], [4.0], [3.0]]
-    translatingBody3.fHat_B = [[1.0], [0.0], [0.0]]  # change this to P
+    translatingBody3.fHat_P = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
     translatingBody3.rhoInit = 1.0
     translatingBody3.rhoDotInit = 0.05
     translatingBody3.k = 100.0
     translatingBodyEffector.addTranslatingBody(translatingBody3)
 
-    # translatingBody4 = linearTranslationNDOFStateEffector.translatingBody()
-    # translatingBody4.mass = 20.0
-    # translatingBody4.IPntFc_F = [[40.0, 0.0, 0.0],
-    #                             [0.0, 60.0, 0.0],
-    #                             [0.0, 0.0, 50.0]]
-    # translatingBody4.dcm_FB = [[0.0, -1.0, 0.0],
-    #                           [0.0, 0.0, -1.0],
-    #                           [-1.0, 0.0, 0.0]]  # change this to FP
-    # translatingBody4.r_FcF_F = [[-1.0], [1.0], [0.0]]
-    # translatingBody4.r_F0P_P = [[-5.0], [4.0], [3.0]]
-    # translatingBody4.fHat_B = [[0.0], [0.0], [1.0]]  # change this to P
-    # translatingBody4.rhoInit = 1.0
-    # translatingBody4.rhoDotInit = 0.05
-    # translatingBody4.k = 100.0
-    # translatingBodyEffector.addTranslatingBody(translatingBody4)
+    translatingBody4 = linearTranslationNDOFStateEffector.translatingBody()
+    translatingBody4.mass = 20.0
+    translatingBody4.IPntFc_F = [[40.0, 0.0, 0.0],
+                                 [0.0, 60.0, 0.0],
+                                 [0.0, 0.0, 50.0]]
+    translatingBody4.dcm_FP = [[1.0, 0.0, 0.0],
+                               [0.0, 1.0, 0.0],
+                               [0.0, 0.0, 1.0]]  # change this to FP
+    translatingBody4.r_FcF_F = [[-1.0], [1.0], [0.0]]
+    translatingBody4.r_F0P_P = [[-5.0], [4.0], [3.0]]
+    translatingBody4.fHat_P = [[0.0], [0.0], [1.0]]  # change this to P
+    translatingBody4.rhoInit = 1.0
+    translatingBody4.rhoDotInit = 0.05
+    translatingBody4.k = 100.0
+    translatingBodyEffector.addTranslatingBody(translatingBody4)
 
     # Add body to spacecraft
     scObject.addStateEffector(translatingBodyEffector)
@@ -208,16 +209,16 @@ def translatingBody(show_plots):
     # Add states to log
     # add more when 1 is working
     rho1Data = translatingBodyEffector.translatingBodyOutMsgs[0].recorder()
-    rho2Data = translatingBodyEffector.translatingBodyOutMsgs[1].recorder()
-    rho3Data = translatingBodyEffector.translatingBodyOutMsgs[2].recorder()
-    # rho4Data = translatingBodyEffector.translatingBodyOutMsgs[3].recorder()
     unitTestSim.AddModelToTask(unitTaskName, rho1Data)
+    rho2Data = translatingBodyEffector.translatingBodyOutMsgs[1].recorder()
     unitTestSim.AddModelToTask(unitTaskName, rho2Data)
+    rho3Data = translatingBodyEffector.translatingBodyOutMsgs[2].recorder()
     unitTestSim.AddModelToTask(unitTaskName, rho3Data)
+    # rho4Data = translatingBodyEffector.translatingBodyOutMsgs[3].recorder()
     # unitTestSim.AddModelToTask(unitTaskName, rho4Data)
 
     # Setup and run the simulation
-    stopTime = 25000*testProcessRate
+    stopTime = 1000 * testProcessRate
     unitTestSim.ConfigureStopTime(stopTime)
     unitTestSim.ExecuteSimulation()
 

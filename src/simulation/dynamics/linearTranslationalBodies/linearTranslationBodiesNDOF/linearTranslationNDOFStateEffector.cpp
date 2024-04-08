@@ -52,8 +52,8 @@ linearTranslationNDOFStateEffector::~linearTranslationNDOFStateEffector()
 void linearTranslationNDOFStateEffector::Reset(uint64_t CurrentClock)
 {
     for(auto& translatingBody: this->translatingBodyVec) {
-        if (translatingBody.fHat_B.norm() > 0.0) {
-            translatingBody.fHat_B.normalize();
+        if (translatingBody.fHat_P.norm() > 0.0) {
+            translatingBody.fHat_P.normalize();
         }
         else {
             bskLogger.bskLog(BSK_ERROR, "Norm of fHat must be greater than 0. sHat may not have been set by the user.");
@@ -165,7 +165,13 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
         translatingBody.rhoDot = this->rhoDotState->getState()(i, 0);
 
         // Write the spinning axis in B frame
-        // translatingBody.fHat_B = translatingBody.dcm_FB.transpose() * translatingBody.fHat_F;
+        if (i == 0) {
+            translatingBody.dcm_FB = translatingBody.dcm_FP;
+            translatingBody.fHat_B = translatingBody.fHat_P;
+        } else {
+            translatingBody.dcm_FB = translatingBody.dcm_FP * this->translatingBodyVec[i-1].dcm_FB;
+            translatingBody.fHat_B = this->translatingBodyVec[i-1].dcm_FB.transpose() * translatingBody.fHat_P;
+        }
         translatingBody.r_FF0_B = translatingBody.rho * translatingBody.fHat_B;
 
 
@@ -237,12 +243,13 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     for (int n = 0; n<this->N; n++) {
         for (int i = 0; i<this->N; i++) {
             MRho(n,i) = 0.0;
-            for (int j = n; j<this->N; j++) {
+            for (int j = (i<=n) ? n : i; j<this->N; j++) {
                 MRho(n,i) += this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[j].mass
                     * this->translatingBodyVec[i].fHat_B;
             }
         }
     }
+    Eigen::MatrixXd MRho_inv = MRho.inverse();
 
     // Compute ARhoStar, BRhoStar and CRhoStar
     Eigen::MatrixXd ARhoStar(this->N, 3);

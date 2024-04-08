@@ -35,14 +35,15 @@
 
 struct translatingBody {
     double mass = 0.0;
-    Eigen::Matrix3d IPntFc_F = Eigen::Matrix3d::Zero();           //!< [kg-m^2] Inertia of body about point Pc in P frame components
+    Eigen::Matrix3d IPntFc_F = Eigen::Matrix3d::Identity();           //!< [kg-m^2] Inertia of body about point Pc in P frame components
     Eigen::Vector3d r_FcF_F = Eigen::Vector3d::Zero();           //!< [m] vector pointing from translating frame P origin to point Pc (center of mass of arm) in P frame components
     Eigen::Vector3d r_F0P_P = Eigen::Vector3d::Zero();
-    Eigen::Vector3d fHat_F = Eigen::Vector3d::Zero();         //!< -- translating axis in P frame components.
+    Eigen::Vector3d fHat_P{1.0, 0.0, 0.0};         //!< -- translating axis in P frame components.
     double k = 0.0;                                           //!< [N-m/rad] torsional spring constant
     double c = 0.0;                                           //!< [N-m-s/rad] rotational damping coefficient
     double rhoInit = 0.0;                                     //!< [rad] initial spinning body angle
     double rhoDotInit = 0.0;                                  //!< [rad/s] initial spinning body angle rate
+    Eigen::Matrix3d dcm_FP = Eigen::Matrix3d::Identity();            //!< -- DCM from P frame to body frame
 
     // Scalar Properties
     double rho;
