@@ -249,7 +249,6 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
             }
         }
     }
-    Eigen::MatrixXd MRho_inv = MRho.inverse();
 
     // Compute ARhoStar, BRhoStar and CRhoStar
     Eigen::MatrixXd ARhoStar(this->N, 3);
