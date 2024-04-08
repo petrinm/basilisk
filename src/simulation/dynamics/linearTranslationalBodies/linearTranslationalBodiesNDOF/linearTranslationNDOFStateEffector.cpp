@@ -52,11 +52,11 @@ linearTranslationNDOFStateEffector::~linearTranslationNDOFStateEffector()
 void linearTranslationNDOFStateEffector::Reset(uint64_t CurrentClock)
 {
     for(auto& translatingBody: this->translatingBodyVec) {
-        if (translatingBody.fHat_F.norm() > 0.01) {
-            translatingBody.fHat_F.normalize();
+        if (translatingBody.fHat_B.norm() > 0.0) {
+            translatingBody.fHat_B.normalize();
         }
         else {
-//            bskLogger.bskLog(BSK_ERROR, "Norm of fHat must be greater than 0. sHat may not have been set by the user.");
+            bskLogger.bskLog(BSK_ERROR, "Norm of fHat must be greater than 0. sHat may not have been set by the user.");
         }
     }
 }
@@ -186,7 +186,7 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
 
         // Find the inertia of the bodies about point B
         translatingBody.rTilde_FcB_B = eigenTilde(translatingBody.r_FcB_B);
-        translatingBody.IPntFc_B = translatingBody.dcm_FB.transpose() * translatingBody.IPntFc_F * translatingBody.dcm_FB.transpose().transpose();
+        translatingBody.IPntFc_B = translatingBody.dcm_FB.transpose() * translatingBody.IPntFc_F * translatingBody.dcm_FB;
         this->effProps.IEffPntB_B += translatingBody.IPntFc_B - translatingBody.mass * translatingBody.rTilde_FcB_B * translatingBody.rTilde_FcB_B;
 
         // Find rPrime_Sc1B_B and rPrime_Sc2B_B
@@ -204,7 +204,6 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
         this->effProps.rEffPrime_CB_B += translatingBody.mass * translatingBody.rPrime_FcB_B;
 
         // Find the body-frame time derivative of the inertias of each arm and the entire spacecraft
-        // todo BN_B or FN_B check
         translatingBody.IPrimePntFc_B = Eigen::Matrix3d::Zero();
         Eigen::Matrix3d rPrimeTilde_FcB_B = eigenTilde(translatingBody.rPrime_FcB_B);
         this->effProps.IEffPrimePntB_B += translatingBody.IPrimePntFc_B - translatingBody.mass * (rPrimeTilde_FcB_B * translatingBody.rTilde_FcB_B + translatingBody.rTilde_FcB_B * rPrimeTilde_FcB_B);
@@ -262,10 +261,10 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
 
             ARhoStar.row(n) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass;
             BRhoStar.row(n) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass * rTilde_FciB_B;
-//            CRhoStar(n, 0) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass *
-//                              (omegaTilde_BN_B*omegaTilde_BN_B*r_FciB_B + 2*omegaTilde_BN_B * rPrime_FciB_B);
-            CRhoStar(n, 0) += this->translatingBodyVec[n].fHat_B.transpose() * (g_B - this->translatingBodyVec[i].mass *
-                              (omegaTilde_BN_B * omegaTilde_BN_B * r_FciB_B + 2 * omegaTilde_BN_B * rPrime_FciB_B));
+            CRhoStar(n, 0) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass *
+                              (omegaTilde_BN_B*omegaTilde_BN_B*r_FciB_B + 2*omegaTilde_BN_B * rPrime_FciB_B);
+//            CRhoStar(n, 0) += this->translatingBodyVec[n].fHat_B.transpose() * (g_B - this->translatingBodyVec[i].mass *
+//                              (omegaTilde_BN_B * omegaTilde_BN_B * r_FciB_B + 2 * omegaTilde_BN_B * rPrime_FciB_B));
         }
     }
 
@@ -298,17 +297,13 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
 /*! This method is used to find the derivatives for the SB stateEffector: rhoDDot and the kinematic derivative */
 //YES
 void linearTranslationNDOFStateEffector::computeDerivatives(double integTime, Eigen::Vector3d rDDot_BN_N, Eigen::Vector3d omegaDot_BN_B, Eigen::Vector3d sigma_BN)
-{   
-    // Grab omegaDot_BN_B 
-    Eigen::Vector3d omegaDotLocal_BN_B;
-    omegaDotLocal_BN_B = omegaDot_BN_B;
-
+{
     // Find rDDotLoc_BN_B
     const Eigen::Vector3d& rDDotLocal_BN_N = rDDot_BN_N;
     Eigen::Vector3d rDDotLocal_BN_B = this->dcm_BN * rDDotLocal_BN_N;
 
     // Compute rho and rhoDot derivatives
-    Eigen::VectorXd rhoDDot = this->ARho * rDDotLocal_BN_B + this->BRho * omegaDotLocal_BN_B + this->CRho;
+    Eigen::VectorXd rhoDDot = this->ARho * rDDotLocal_BN_B + this->BRho * omegaDot_BN_B + this->CRho;
     this->rhoState->setDerivative(this->rhoDotState->getState());
     this->rhoDotState->setDerivative(rhoDDot);
 }

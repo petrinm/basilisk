@@ -94,7 +94,7 @@ def translatingBody(show_plots):
     unitTestSim = SimulationBaseClass.SimBaseClass()
 
     # Create test thread
-    testProcessRate = macros.sec2nano(0.0001)  # update process rate update time
+    testProcessRate = macros.sec2nano(0.001)  # update process rate update time
     testProc = unitTestSim.CreateNewProcess(unitProcessName)
     testProc.addTask(unitTestSim.CreateNewTask(unitTaskName, testProcessRate))
 
@@ -118,6 +118,54 @@ def translatingBody(show_plots):
     translatingBody1.rhoDotInit = 0.05
     translatingBody1.k = 100.0
     translatingBodyEffector.addTranslatingBody(translatingBody1)
+
+    translatingBody2 = linearTranslationNDOFStateEffector.translatingBody()
+    translatingBody2.mass = 20.0
+    translatingBody2.IPntFc_F = [[70.0, 0.0, 0.0],
+                                [0.0, 50.0, 0.0],
+                                [0.0, 0.0, 60.0]]
+    translatingBody2.dcm_FB = [[1.0, 0.0, 0.0],
+                              [0.0, 1.0, 0.0],
+                              [0.0, 0.0, 1.0]]  # change this to FP
+    translatingBody2.r_FcF_F = [[-1.0], [1.0], [0.0]]
+    translatingBody2.r_F0P_P = [[-5.0], [4.0], [3.0]]
+    translatingBody2.fHat_B = [[0.0], [4.0 / 5.0], [3.0 / 5.0]]  # change this to P
+    translatingBody2.rhoInit = 1.0
+    translatingBody2.rhoDotInit = 0.05
+    translatingBody2.k = 100.0
+    translatingBodyEffector.addTranslatingBody(translatingBody2)
+
+    translatingBody3 = linearTranslationNDOFStateEffector.translatingBody()
+    translatingBody3.mass = 20.0
+    translatingBody3.IPntFc_F = [[40.0, 0.0, 0.0],
+                                [0.0, 60.0, 0.0],
+                                [0.0, 0.0, 50.0]]
+    translatingBody3.dcm_FB = [[0.0, 1.0, 0.0],
+                              [0.0, 0.0, -1.0],
+                              [-1.0, 0.0, 0.0]]  # change this to FP
+    translatingBody3.r_FcF_F = [[-1.0], [1.0], [0.0]]
+    translatingBody3.r_F0P_P = [[-5.0], [4.0], [3.0]]
+    translatingBody3.fHat_B = [[1.0], [0.0], [0.0]]  # change this to P
+    translatingBody3.rhoInit = 1.0
+    translatingBody3.rhoDotInit = 0.05
+    translatingBody3.k = 100.0
+    translatingBodyEffector.addTranslatingBody(translatingBody3)
+
+    # translatingBody4 = linearTranslationNDOFStateEffector.translatingBody()
+    # translatingBody4.mass = 20.0
+    # translatingBody4.IPntFc_F = [[40.0, 0.0, 0.0],
+    #                             [0.0, 60.0, 0.0],
+    #                             [0.0, 0.0, 50.0]]
+    # translatingBody4.dcm_FB = [[0.0, -1.0, 0.0],
+    #                           [0.0, 0.0, -1.0],
+    #                           [-1.0, 0.0, 0.0]]  # change this to FP
+    # translatingBody4.r_FcF_F = [[-1.0], [1.0], [0.0]]
+    # translatingBody4.r_F0P_P = [[-5.0], [4.0], [3.0]]
+    # translatingBody4.fHat_B = [[0.0], [0.0], [1.0]]  # change this to P
+    # translatingBody4.rhoInit = 1.0
+    # translatingBody4.rhoDotInit = 0.05
+    # translatingBody4.k = 100.0
+    # translatingBodyEffector.addTranslatingBody(translatingBody4)
 
     # Add body to spacecraft
     scObject.addStateEffector(translatingBodyEffector)
@@ -148,6 +196,8 @@ def translatingBody(show_plots):
     datLog = scObject.scStateOutMsg.recorder()
     unitTestSim.AddModelToTask(unitTaskName, datLog)
 
+    # breakpoint()
+
     # Initialize the simulation
     unitTestSim.InitializeSimulation()
 
@@ -158,12 +208,12 @@ def translatingBody(show_plots):
     # Add states to log
     # add more when 1 is working
     rho1Data = translatingBodyEffector.translatingBodyOutMsgs[0].recorder()
-    # rho2Data = translatingBodyEffector.translatingBodyOutMsgs[1].recorder()
-    # rho3Data = translatingBodyEffector.translatingBodyOutMsgs[2].recorder()
+    rho2Data = translatingBodyEffector.translatingBodyOutMsgs[1].recorder()
+    rho3Data = translatingBodyEffector.translatingBodyOutMsgs[2].recorder()
     # rho4Data = translatingBodyEffector.translatingBodyOutMsgs[3].recorder()
     unitTestSim.AddModelToTask(unitTaskName, rho1Data)
-    # unitTestSim.AddModelToTask(unitTaskName, rho2Data)
-    # unitTestSim.AddModelToTask(unitTaskName, rho3Data)
+    unitTestSim.AddModelToTask(unitTaskName, rho2Data)
+    unitTestSim.AddModelToTask(unitTaskName, rho3Data)
     # unitTestSim.AddModelToTask(unitTaskName, rho4Data)
 
     # Setup and run the simulation
@@ -179,14 +229,12 @@ def translatingBody(show_plots):
     rho1 = rho1Data.rho
     rho1Dot = rho1Data.rhoDot
     # add more when 1 is working
-    # rho2 = rho2Data.rho
-    # rho2Dot = rho2Data.rhoDot
-    # rho3 = rho3Data.rho
-    # rho3Dot = rho3Data.rhoDot
+    rho2 = rho2Data.rho
+    rho2Dot = rho2Data.rhoDot
+    rho3 = rho3Data.rho
+    rho3Dot = rho3Data.rhoDot
     # rho4 = rho4Data.rho
     # rho4Dot = rho4Data.rhoDot
-
-    # breakpoint()
 
     # Set up the conservation quantities
     timeSec = scObjectLog.times() * 1e-9
@@ -236,9 +284,9 @@ def translatingBody(show_plots):
     plt.figure()
     plt.clf()
     plt.plot(rho1Data.times() * 1e-9, rho1, label=r'$\rho_1$')
-    # plt.plot(rho2Data.times() * 1e-9, rho2, label=r'$\rho_2$')
-    # plt.plot(rho3Data.times() * 1e-9, rho3, label=r'$\rho_1$')
-    # plt.plot(rho4Data.times() * 1e-9, rho4, label=r'$\rho_2$')
+    plt.plot(rho2Data.times() * 1e-9, rho2, label=r'$\rho_2$')
+    plt.plot(rho3Data.times() * 1e-9, rho3, label=r'$\rho_3$')
+    # plt.plot(rho4Data.times() * 1e-9, rho4, label=r'$\rho_4$')
     plt.legend(loc='best')
     plt.xlabel('time (s)')
     plt.ylabel('Angle')
@@ -246,9 +294,9 @@ def translatingBody(show_plots):
     plt.figure()
     plt.clf()
     plt.plot(rho1Data.times() * 1e-9, rho1Dot, label=r'$\dot{\rho}_1$')
-    # plt.plot(rho2Data.times() * 1e-9, rho2Dot, label=r'$\dot{\rho}_2$')
-    # plt.plot(rho3Data.times() * 1e-9, rho3Dot, label=r'$\dot{\rho}_1$')
-    # plt.plot(rho4Data.times() * 1e-9, rho4Dot, label=r'$\dot{\rho}_2$')
+    plt.plot(rho2Data.times() * 1e-9, rho2Dot, label=r'$\dot{\rho}_2$')
+    plt.plot(rho3Data.times() * 1e-9, rho3Dot, label=r'$\dot{\rho}_3$')
+    # plt.plot(rho4Data.times() * 1e-9, rho4Dot, label=r'$\dot{\rho}_4$')
     plt.legend(loc='best')
     plt.xlabel('time (s)')
     plt.ylabel('Angle Rate')
