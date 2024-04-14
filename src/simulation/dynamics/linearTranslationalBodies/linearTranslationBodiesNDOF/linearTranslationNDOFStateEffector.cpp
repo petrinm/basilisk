@@ -237,6 +237,7 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     // Map gravity to body frame
     Eigen::Vector3d g_B;
     g_B = this->dcm_BN * g_N;
+    Eigen::Vector3d F_g = Eigen::Vector3d::Zero().transpose();
 
     // Compute MRho
     Eigen::MatrixXd MRho(this->N, this->N);
@@ -265,12 +266,11 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
             Eigen::Matrix3d rTilde_FciB_B = eigenTilde(r_FciB_B);
             Eigen::Vector3d rPrime_FciB_B = this->translatingBodyVec[i].rPrime_FcB_B;
 
+            F_g = this->translatingBodyVec[i].mass * g_B;
             ARhoStar.row(n) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass;
-            BRhoStar.row(n) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass * rTilde_FciB_B;
-            CRhoStar(n, 0) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass *
-                              (omegaTilde_BN_B*omegaTilde_BN_B*r_FciB_B + 2*omegaTilde_BN_B * rPrime_FciB_B);
-//            CRhoStar(n, 0) += this->translatingBodyVec[n].fHat_B.transpose() * (g_B - this->translatingBodyVec[i].mass *
-//                              (omegaTilde_BN_B * omegaTilde_BN_B * r_FciB_B + 2 * omegaTilde_BN_B * rPrime_FciB_B));
+            BRhoStar.row(n) += this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass * rTilde_FciB_B;
+            CRhoStar(n, 0) += this->translatingBodyVec[n].fHat_B.transpose() * (F_g - this->translatingBodyVec[i].mass *
+                              (omegaTilde_BN_B * omegaTilde_BN_B * r_FciB_B + 2 * omegaTilde_BN_B * rPrime_FciB_B));
         }
     }
 

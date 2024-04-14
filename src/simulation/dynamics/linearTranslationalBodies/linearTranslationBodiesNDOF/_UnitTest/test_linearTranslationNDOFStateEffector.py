@@ -214,11 +214,11 @@ def translatingBody(show_plots):
     unitTestSim.AddModelToTask(unitTaskName, rho2Data)
     rho3Data = translatingBodyEffector.translatingBodyOutMsgs[2].recorder()
     unitTestSim.AddModelToTask(unitTaskName, rho3Data)
-    # rho4Data = translatingBodyEffector.translatingBodyOutMsgs[3].recorder()
-    # unitTestSim.AddModelToTask(unitTaskName, rho4Data)
+    rho4Data = translatingBodyEffector.translatingBodyOutMsgs[3].recorder()
+    unitTestSim.AddModelToTask(unitTaskName, rho4Data)
 
     # Setup and run the simulation
-    stopTime = 1000 * testProcessRate
+    stopTime = 25000 * testProcessRate
     unitTestSim.ConfigureStopTime(stopTime)
     unitTestSim.ExecuteSimulation()
 
@@ -234,8 +234,8 @@ def translatingBody(show_plots):
     rho2Dot = rho2Data.rhoDot
     rho3 = rho3Data.rho
     rho3Dot = rho3Data.rhoDot
-    # rho4 = rho4Data.rho
-    # rho4Dot = rho4Data.rhoDot
+    rho4 = rho4Data.rho
+    rho4Dot = rho4Data.rhoDot
 
     # Set up the conservation quantities
     timeSec = scObjectLog.times() * 1e-9
@@ -287,7 +287,7 @@ def translatingBody(show_plots):
     plt.plot(rho1Data.times() * 1e-9, rho1, label=r'$\rho_1$')
     plt.plot(rho2Data.times() * 1e-9, rho2, label=r'$\rho_2$')
     plt.plot(rho3Data.times() * 1e-9, rho3, label=r'$\rho_3$')
-    # plt.plot(rho4Data.times() * 1e-9, rho4, label=r'$\rho_4$')
+    plt.plot(rho4Data.times() * 1e-9, rho4, label=r'$\rho_4$')
     plt.legend(loc='best')
     plt.xlabel('time (s)')
     plt.ylabel('Angle')
@@ -297,7 +297,7 @@ def translatingBody(show_plots):
     plt.plot(rho1Data.times() * 1e-9, rho1Dot, label=r'$\dot{\rho}_1$')
     plt.plot(rho2Data.times() * 1e-9, rho2Dot, label=r'$\dot{\rho}_2$')
     plt.plot(rho3Data.times() * 1e-9, rho3Dot, label=r'$\dot{\rho}_3$')
-    # plt.plot(rho4Data.times() * 1e-9, rho4Dot, label=r'$\dot{\rho}_4$')
+    plt.plot(rho4Data.times() * 1e-9, rho4Dot, label=r'$\dot{\rho}_4$')
     plt.legend(loc='best')
     plt.xlabel('time (s)')
     plt.ylabel('Angle Rate')
