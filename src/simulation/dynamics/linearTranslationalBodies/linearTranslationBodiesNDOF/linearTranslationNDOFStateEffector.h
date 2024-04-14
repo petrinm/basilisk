@@ -122,7 +122,7 @@ public:
 
     std::vector<Message<LinearTranslationRigidBodyMsgPayload>*> translatingBodyOutMsgs;       //!< vector of state output messages
     std::vector<Message<SCStatesMsgPayload>*> translatingBodyConfigLogOutMsgs;     //!< vector of spinning body state config log messages
-    std::vector<ReadFunctor<LinearTranslationRigidBodyMsgPayload>*> translatingBodyRefInMsgs;  //!< (optional) reference state input message
+    std::vector<ReadFunctor<LinearTranslationRigidBodyMsgPayload>> translatingBodyRefInMsgs;  //!< (optional) reference state input message
     ReadFunctor<ArrayMotorForceMsgPayload> motorForceInMsg;                   //!< -- (optional) motor force input message name
     ReadFunctor<ArrayEffectorLockMsgPayload> motorLockInMsg;                    //!< -- (optional) motor lock input message name
 

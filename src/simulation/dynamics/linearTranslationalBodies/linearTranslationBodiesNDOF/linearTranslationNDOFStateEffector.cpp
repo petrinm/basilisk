@@ -70,6 +70,7 @@ void linearTranslationNDOFStateEffector::addTranslatingBody(const translatingBod
     // Create the output vectors
     this->translatingBodyConfigLogOutMsgs.push_back(new Message<SCStatesMsgPayload>);
     this->translatingBodyOutMsgs.push_back(new Message<LinearTranslationRigidBodyMsgPayload>);
+    this->translatingBodyRefInMsgs.push_back(ReadFunctor<LinearTranslationRigidBodyMsgPayload>());
 
     // resize A B and C
     this->ARho.conservativeResize(this->ARho.rows()+1, 3);
