@@ -82,7 +82,7 @@ void linearTranslationNDOFStateEffector::addTranslatingBody(const translatingBod
 //YES
 void linearTranslationNDOFStateEffector::writeOutputStateMessages(uint64_t CurrentClock)
 {
-    // Write out the spinning body output messages
+    // Write out the translating body output messages
     int i = 0;
     LinearTranslationRigidBodyMsgPayload translatingBodyBuffer;
     SCStatesMsgPayload configLogMsg;
@@ -159,14 +159,14 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
 
     int i = 0;
     for(auto& translatingBody: this->translatingBodyVec) {
-        // Give the mass of the spinning body to the effProps mass
+        // Give the mass of the translating body to the effProps mass
         this->effProps.mEff += translatingBody.mass;
 
         // Grab current states
         translatingBody.rho = this->rhoState->getState()(i, 0);
         translatingBody.rhoDot = this->rhoDotState->getState()(i, 0);
 
-        // Write the spinning axis in B frame
+        // Write the translating axis in B frame
         if (i == 0) {
             translatingBody.dcm_FB = translatingBody.dcm_FP;
             translatingBody.fHat_B = translatingBody.fHat_P;
@@ -263,8 +263,9 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
         ARhoStar.row(n) = Eigen::Vector3d::Zero().transpose();
         BRhoStar.row(n) = Eigen::Vector3d::Zero().transpose();
         CRhoStar(n, 0) = this->translatingBodyVec[n].u
-                           - this->translatingBodyVec[n].k * this->translatingBodyVec[n].rho
-                           - this->translatingBodyVec[n].c * this->translatingBodyVec[n].rhoDot;
+                           - this->translatingBodyVec[n].k * (this->translatingBodyVec[n].rho -
+                           this->translatingBodyVec[n].rhoRef) - this->translatingBodyVec[n].c *
+                           (this->translatingBodyVec[n].rhoDot - this->translatingBodyVec[n].rhoDotRef);
         for (int i = n; i<this->N; i++) {
             Eigen::Vector3d r_FciB_B = this->translatingBodyVec[i].r_FcB_B;
             Eigen::Matrix3d rTilde_FciB_B = eigenTilde(r_FciB_B);
@@ -345,11 +346,12 @@ void linearTranslationNDOFStateEffector::updateEnergyMomContributions(double int
         // Find rotational energy contribution from the hub
         rotEnergyContr += 1.0 / 2.0 * translatingBody.omega_FN_B.dot(translatingBody.IPntFc_B * translatingBody.omega_FN_B)
                         + 1.0 / 2.0 * translatingBody.mass * translatingBody.rDot_FcB_B.dot(translatingBody.rDot_FcB_B)
-                        + 1.0 / 2.0 * translatingBody.k * translatingBody.rho * translatingBody.rho;
+                        + 1.0 / 2.0 * translatingBody.k * (translatingBody.rho - translatingBody.rhoRef) *
+                        (translatingBody.rho - translatingBody.rhoRef);
     }
 }
 
-/*! This method computes the spinning body states relative to the inertial frame */
+/*! This method computes the translating body states relative to the inertial frame */
 //YES
 void linearTranslationNDOFStateEffector::computeTranslatingBodyInertialStates()
 {
@@ -391,6 +393,17 @@ void linearTranslationNDOFStateEffector::UpdateState(uint64_t CurrentSimNanos)
             translatingBody.isAxisLocked = incomingLockBuffer.effectorLockFlag[i];
             i++;
         }
+    }
+
+    int translatingBodyIndex = 0;
+    for(auto& translatingBody: this->translatingBodyVec) {
+        if (this->translatingBodyRefInMsgs[translatingBodyIndex].isLinked() && this->translatingBodyRefInMsgs[translatingBodyIndex].isWritten()) {
+            LinearTranslationRigidBodyMsgPayload incomingRefBuffer;
+            incomingRefBuffer = this->translatingBodyRefInMsgs[translatingBodyIndex]();
+            translatingBody.rhoRef = incomingRefBuffer.rho;
+            translatingBody.rhoDotRef = incomingRefBuffer.rhoDot;
+        }
+        translatingBodyIndex++;
     }
 
     /* Compute translating body inertial states */

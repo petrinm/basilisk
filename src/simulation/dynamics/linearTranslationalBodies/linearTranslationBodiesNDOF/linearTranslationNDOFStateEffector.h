@@ -46,9 +46,12 @@ struct translatingBody {
     Eigen::Matrix3d dcm_FP = Eigen::Matrix3d::Identity();            //!< -- DCM from P frame to body frame
 
     // Scalar Properties
-    double rho;
-    double rhoDot;
+    double rho = 0.0;
+    double rhoDot = 0.0;
+    double rhoRef = 0.0;
+    double rhoDotRef = 0.0;
     double u;
+    // todo: implement lock
     bool isAxisLocked = false;
 
     // Vector quantities
@@ -62,20 +65,17 @@ struct translatingBody {
     Eigen::Vector3d rPrime_FcF_B;     //!< [m/s] body frame time derivative of r_Sc1S1_B
     Eigen::Vector3d rPrime_FcB_B;      //!< [m/s] body frame time derivative of r_Sc1B_B
     Eigen::Vector3d rDot_FcB_B;        //!< [m/s] inertial frame time derivative of r_Sc1B_B
-// todo add parent vector p/p-1
     Eigen::Vector3d r_FP_B;        //!< [m/s] vector from parent frame to current F frame
     Eigen::Vector3d r_FP_P;        //!< [m/s] vector from parent frame to current F frame
     Eigen::Vector3d rPrime_FP_B;        //!< [m/s] vector from parent frame to current F frame
     Eigen::Vector3d rPrime_FF0_B;
 
 // STILL USE THIS
-// todo,update omega in doc and code
     Eigen::Vector3d omega_FN_B;        //!< [rad/s] angular velocity of the P frame wrt the N frame in B frame components
     Eigen::Vector3d omega_SB_B; // zero for all bodies
     Eigen::Matrix3d omegaTilde_FB_B;
 
     // Matrix quantities
-// todo double check all dcm for right convention
     Eigen::Matrix3d dcm_FB;            //!< -- DCM from P frame to body frame
     Eigen::Matrix3d IPntFc_B;          //!< -- [kg-m^2] Inertia of body about point Pc in B frame components
     Eigen::Matrix3d IPrimePntFc_B;     //!< [kg-m^2] Inertia of body about point Pc in B frame components
@@ -122,7 +122,8 @@ public:
 
     std::vector<Message<LinearTranslationRigidBodyMsgPayload>*> translatingBodyOutMsgs;       //!< vector of state output messages
     std::vector<Message<SCStatesMsgPayload>*> translatingBodyConfigLogOutMsgs;     //!< vector of spinning body state config log messages
-    ReadFunctor<ArrayMotorForceMsgPayload> motorForceInMsg;                   //!< -- (optional) motor torque input message name
+    ReadFunctor<LinearTranslationRigidBodyMsgPayload> translatingBodyRefInMsgs;  //!< (optional) reference state input message
+    ReadFunctor<ArrayMotorForceMsgPayload> motorForceInMsg;                   //!< -- (optional) motor force input message name
     ReadFunctor<ArrayEffectorLockMsgPayload> motorLockInMsg;                    //!< -- (optional) motor lock input message name
 
     std::string nameOfRhoState;                               //!< -- identifier for the theta state data container
