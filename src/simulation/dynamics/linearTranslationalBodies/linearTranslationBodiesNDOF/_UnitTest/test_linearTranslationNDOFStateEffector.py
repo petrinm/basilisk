@@ -75,15 +75,10 @@ def test_translatingBody(show_plots):
 
     against their initial values.
     """
-    [testResults, testMessage] = translatingBody(show_plots)
-    assert testResults < 1, testMessage
-
+    eval('translatingBody(show_plots)')
 
 def translatingBody(show_plots):
     __tracebackhide__ = True
-
-    testFailCount = 0  # zero unit test result counter
-    testMessages = []  # create empty list to store test log messages
 
     scObject = spacecraft.Spacecraft()
     scObject.ModelTag = "spacecraftBody"
@@ -308,42 +303,15 @@ def translatingBody(show_plots):
 
     # Testing setup
     accuracy = 1e-12
-    finalOrbAngMom = numpy.delete(finalOrbAngMom, 0, axis=1)  # remove time column
-    finalRotAngMom = numpy.delete(finalRotAngMom, 0, axis=1)  # remove time column
-    finalRotEnergy = numpy.delete(finalRotEnergy, 0, axis=1)  # remove time column
-    finalOrbEnergy = numpy.delete(finalOrbEnergy, 0, axis=1)  # remove time column
 
-    for i in range(0, len(initialOrbAngMom_N)):
-        # check a vector values
-        if not unitTestSupport.isArrayEqualRelative(finalOrbAngMom[i], initialOrbAngMom_N[i], 3, accuracy):
-            testFailCount += 1
-            testMessages.append("FAILED: Translating Body integrated test failed orbital angular momentum unit test")
-
-    for i in range(0, len(initialRotAngMom_N)):
-        # check a vector values
-        if not unitTestSupport.isArrayEqualRelative(finalRotAngMom[i], initialRotAngMom_N[i], 3, accuracy):
-            testFailCount += 1
-            testMessages.append("FAILED: Translating Body integrated test failed rotational angular momentum unit test")
-
-    for i in range(0, len(initialRotEnergy)):
-        # check a vector values
-        if not unitTestSupport.isArrayEqualRelative(finalRotEnergy[i], initialRotEnergy[i], 1, accuracy):
-            testFailCount += 1
-            testMessages.append("FAILED: Translating Body integrated test failed rotational energy unit test")
-
-    for i in range(0, len(initialOrbEnergy)):
-        # check a vector values
-        if not unitTestSupport.isArrayEqualRelative(finalOrbEnergy[i], initialOrbEnergy[i], 1, accuracy):
-            testFailCount += 1
-            testMessages.append("FAILED: Translating Body integrated test failed orbital energy unit test")
-
-    if testFailCount == 0:
-        print("PASSED: " + " Translating Body gravity integrated test")
-
-    assert testFailCount < 1, testMessages
-    # return fail count and join into a single string all messages in the list
-    # testMessage
-    return [testFailCount, ''.join(testMessages)]
+    np.testing.assert_allclose(finalOrbEnergy, initialOrbEnergy, rtol=accuracy, err_msg="Orbital energy is not constant.")
+    np.testing.assert_allclose(finalRotEnergy, initialRotEnergy, rtol=accuracy,
+                               err_msg="Rotational energy is not constant.")
+    for i in range(3):
+        np.testing.assert_allclose(finalOrbAngMom, initialOrbAngMom_N, rtol=accuracy,
+                                   err_msg="Orbital angular momentum is not constant.")
+        np.testing.assert_allclose(finalRotAngMom, initialRotAngMom_N, rtol=accuracy,
+                                   err_msg="Rotational angular momentum is not constant.")
 
 
 if __name__ == "__main__":

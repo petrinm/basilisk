@@ -49,7 +49,7 @@ struct translatingBody {
     double rho;
     double rhoDot;
     double u;
-    int lockFlag;
+    bool isAxisLocked = false;
 
     // Vector quantities
     Eigen::Vector3d r_FF0_B;

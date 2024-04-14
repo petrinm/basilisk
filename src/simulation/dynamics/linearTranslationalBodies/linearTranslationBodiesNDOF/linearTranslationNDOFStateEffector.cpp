@@ -155,6 +155,8 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
     this->effProps.IEffPntB_B = Eigen::Matrix3d::Zero();
     this->effProps.IEffPrimePntB_B = Eigen::Matrix3d::Zero();
 
+    // todo: need lock flag if statement
+
     int i = 0;
     for(auto& translatingBody: this->translatingBodyVec) {
         // Give the mass of the spinning body to the effProps mass
@@ -238,6 +240,8 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     Eigen::Vector3d g_B;
     g_B = this->dcm_BN * g_N;
     Eigen::Vector3d F_g = Eigen::Vector3d::Zero().transpose();
+
+    // todo: add lock flag if statement (somewhere in for loop)
 
     // Compute MRho
     Eigen::MatrixXd MRho(this->N, this->N);
@@ -384,7 +388,7 @@ void linearTranslationNDOFStateEffector::UpdateState(uint64_t CurrentSimNanos)
         incomingLockBuffer = this->motorLockInMsg();
         int i = 0;
         for(auto& translatingBody: this->translatingBodyVec) {
-            translatingBody.lockFlag = incomingLockBuffer.effectorLockFlag[i];
+            translatingBody.isAxisLocked = incomingLockBuffer.effectorLockFlag[i];
             i++;
         }
     }
