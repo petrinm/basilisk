@@ -160,6 +160,9 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
 
     int i = 0;
     for(auto& translatingBody: this->translatingBodyVec) {
+        if(translatingBody.isAxisLocked){
+            
+        }
         // Give the mass of the translating body to the effProps mass
         this->effProps.mEff += translatingBody.mass;
 
@@ -247,6 +250,8 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     // Compute MRho
     Eigen::MatrixXd MRho(this->N, this->N);
     for (int n = 0; n<this->N; n++) {
+        if (this->translatingBodyVec[n].isAxisLocked)
+            continue;
         for (int i = 0; i<this->N; i++) {
             MRho(n,i) = 0.0;
             for (int j = (i<=n) ? n : i; j<this->N; j++) {
@@ -261,6 +266,8 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     Eigen::MatrixXd BRhoStar(this->N, 3);
     Eigen::VectorXd CRhoStar(this->N);
     for (int n = 0; n<this->N; n++) {
+        if (this->translatingBodyVec[n].isAxisLocked)
+            continue;
         ARhoStar.row(n) = Eigen::Vector3d::Zero().transpose();
         BRhoStar.row(n) = Eigen::Vector3d::Zero().transpose();
         CRhoStar(n, 0) = this->translatingBodyVec[n].u
