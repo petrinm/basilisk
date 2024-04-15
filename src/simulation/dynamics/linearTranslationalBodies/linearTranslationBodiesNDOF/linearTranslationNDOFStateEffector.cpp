@@ -161,7 +161,9 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
     int i = 0;
     for(auto& translatingBody: this->translatingBodyVec) {
         if(translatingBody.isAxisLocked){
-            
+            auto rhoDotVector = this->rhoDotState->getState();
+            rhoDotVector(i) = 0.0;
+            this->rhoDotState->setState(rhoDotVector);
         }
         // Give the mass of the translating body to the effProps mass
         this->effProps.mEff += translatingBody.mass;
