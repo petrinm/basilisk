@@ -197,9 +197,15 @@ private:
                                       Eigen::Vector3d& rotAngMomPntCContr_B,
                                       double& rotEnergyContr,
                                       Eigen::Vector3d omega_BN_B) final;       //!< -- Method for computing energy and momentum for SBs
-
     void prependSpacecraftNameToStates() final;                   //!< Method used for multiple spacecraft
     void computeTranslatingBodyInertialStates();               //!< Method for computing the SB's states
+
+    void readInputMessages();
+    void computeMRho(Eigen::MatrixXd& MRho);
+    void computeARhoStar(Eigen::MatrixXd& ARhoStar);
+    void computeBRhoStar(Eigen::MatrixXd& BRhoStar);
+    void computeCRhoStar(Eigen::VectorXd& CRhoStar, const Eigen::Vector3d& g_N);
+    void computeBackSubContributions(BackSubMatrices& backSubContr) const;
 };
 
 #endif /* LINEAR_TRANSLATION_N_DOF_STATE_EFFECTOR_H */

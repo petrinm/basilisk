@@ -23,7 +23,6 @@
 #include <string>
 
 /*! This is the constructor, setting variables to default values */
-//YES
 linearTranslationNDOFStateEffector::linearTranslationNDOFStateEffector()
 {
     // Zero the mass props and mass prop rates contributions
@@ -41,7 +40,6 @@ linearTranslationNDOFStateEffector::linearTranslationNDOFStateEffector()
 uint64_t linearTranslationNDOFStateEffector::effectorID = 1;
 
 /*! This is the destructor, nothing to report here */
-//YES
 linearTranslationNDOFStateEffector::~linearTranslationNDOFStateEffector()
 {
     linearTranslationNDOFStateEffector::effectorID --;    /* reset the panel ID*/
@@ -81,7 +79,6 @@ void translatingBody::setC(double c) {
 }
 
 /*! This method is used to reset the module. */
-//YES
 void linearTranslationNDOFStateEffector::Reset(uint64_t CurrentClock)
 {
     for(auto& translatingBody: this->translatingBodyVec) {
@@ -94,7 +91,6 @@ void linearTranslationNDOFStateEffector::Reset(uint64_t CurrentClock)
     }
 }
 
-//YES
 void linearTranslationNDOFStateEffector::addTranslatingBody(const translatingBody& newBody) {
     // Pushback new body
     translatingBodyVec.push_back(newBody);
@@ -111,9 +107,43 @@ void linearTranslationNDOFStateEffector::addTranslatingBody(const translatingBod
     this->CRho.conservativeResize(this->CRho.rows()+1);
 }
 
+void linearTranslationNDOFStateEffector::readInputMessages()
+{
+    //! - Read the incoming command array
+    if (this->motorForceInMsg.isLinked() && this->motorForceInMsg.isWritten()) {
+        ArrayMotorForceMsgPayload incomingCmdBuffer;
+        incomingCmdBuffer = this->motorForceInMsg();
+        int i = 0;
+        for(auto& translatingBody: this->translatingBodyVec) {
+            translatingBody.u = incomingCmdBuffer.motorForce[i];
+            i++;
+        }
+    }
 
-/*! This method takes the computed theta states and outputs them to the messaging system. */
-//YES
+    //! - Zero the command buffer and read the incoming command array
+    if (this->motorLockInMsg.isLinked() && this->motorLockInMsg.isWritten()) {
+        ArrayEffectorLockMsgPayload incomingLockBuffer;
+        incomingLockBuffer = this->motorLockInMsg();
+        int i = 0;
+        for(auto& translatingBody: this->translatingBodyVec) {
+            translatingBody.isAxisLocked = incomingLockBuffer.effectorLockFlag[i];
+            i++;
+        }
+    }
+
+    int translatingBodyIndex = 0;
+    for(auto& translatingBody: this->translatingBodyVec) {
+        if (this->translatingBodyRefInMsgs[translatingBodyIndex].isLinked() && this->translatingBodyRefInMsgs[translatingBodyIndex].isWritten()) {
+            LinearTranslationRigidBodyMsgPayload incomingRefBuffer;
+            incomingRefBuffer = this->translatingBodyRefInMsgs[translatingBodyIndex]();
+            translatingBody.rhoRef = incomingRefBuffer.rho;
+            translatingBody.rhoDotRef = incomingRefBuffer.rhoDot;
+        }
+        translatingBodyIndex++;
+    }
+}
+
+/*! This method takes the computed eho states and outputs them to the messaging system. */
 void linearTranslationNDOFStateEffector::writeOutputStateMessages(uint64_t CurrentClock)
 {
     // Write out the translating body output messages
@@ -131,7 +161,7 @@ void linearTranslationNDOFStateEffector::writeOutputStateMessages(uint64_t Curre
         if (this->translatingBodyConfigLogOutMsgs[i]->isLinked()) {
             configLogMsg = this->translatingBodyConfigLogOutMsgs[i]->zeroMsgPayload;
 
-            // Logging the S frame is the body frame B of that object
+            // Logging the F frame is the body frame B of that object
             eigenVector3d2CArray(translatingBody.r_FcN_N, configLogMsg.r_BN_N);
             eigenVector3d2CArray(translatingBody.v_FcN_N, configLogMsg.v_BN_N);
             eigenVector3d2CArray(translatingBody.sigma_FN, configLogMsg.sigma_BN);
@@ -144,7 +174,6 @@ void linearTranslationNDOFStateEffector::writeOutputStateMessages(uint64_t Curre
 }
 
 /*! This method prepends the name of the spacecraft for multi-spacecraft simulations.*/
-//YES
 void linearTranslationNDOFStateEffector::prependSpacecraftNameToStates()
 {
     this->nameOfRhoState = this->nameOfSpacecraftAttachedTo + this->nameOfRhoState;
@@ -152,7 +181,6 @@ void linearTranslationNDOFStateEffector::prependSpacecraftNameToStates()
 }
 
 /*! This method allows the SB state effector to have access to the hub states and gravity*/
-//YES
 void linearTranslationNDOFStateEffector::linkInStates(DynParamManager& statesIn)
 {
     this->inertialPositionProperty = statesIn.getPropertyReference(this->nameOfSpacecraftAttachedTo + "r_BN_N");
@@ -160,10 +188,9 @@ void linearTranslationNDOFStateEffector::linkInStates(DynParamManager& statesIn)
 }
 
 /*! This method allows the SB state effector to register its states: rho and rhoDot with the dynamic parameter manager */
-//YES
 void linearTranslationNDOFStateEffector::registerStates(DynParamManager& states)
 {
-    // Register the theta states
+    // Register the rho states
     this->rhoState = states.registerState(N, 1, this->nameOfRhoState);
     this->rhoDotState = states.registerState(N, 1, this->nameOfRhoDotState);
     Eigen::MatrixXd RhoInitMatrix(N,1);
@@ -180,7 +207,6 @@ void linearTranslationNDOFStateEffector::registerStates(DynParamManager& states)
 
 /*! This method allows the SB state effector to provide its contributions to the mass props and mass prop rates of the
  spacecraft */
-//YES
 void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTime)
 {
     this->effProps.mEff = 0.0;
@@ -189,11 +215,9 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
     this->effProps.IEffPntB_B = Eigen::Matrix3d::Zero();
     this->effProps.IEffPrimePntB_B = Eigen::Matrix3d::Zero();
 
-    // todo: need lock flag if statement
-
     int i = 0;
     for(auto& translatingBody: this->translatingBodyVec) {
-        if(translatingBody.isAxisLocked){
+        if (translatingBody.isAxisLocked) {
             auto rhoDotVector = this->rhoDotState->getState();
             rhoDotVector(i) = 0.0;
             this->rhoDotState->setState(rhoDotVector);
@@ -214,7 +238,6 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
             translatingBody.fHat_B = this->translatingBodyVec[i-1].dcm_FB.transpose() * translatingBody.fHat_P;
         }
         translatingBody.r_FF0_B = translatingBody.rho * translatingBody.fHat_B;
-
 
         // Compute the effector's CoM with respect to point B
         translatingBody.r_FcF_B = translatingBody.dcm_FB.transpose() * translatingBody.r_FcF_F;
@@ -263,7 +286,6 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
 
 /*! This method allows the SB state effector to give its contributions to the matrices needed for the back-sub 
  method */
-//YES
 void linearTranslationNDOFStateEffector::updateContributions(double integTime, BackSubMatrices & backSubContr, Eigen::Vector3d sigma_BN, Eigen::Vector3d omega_BN_B, Eigen::Vector3d g_N)
 {
     // Find the DCM from N to B frames
@@ -273,61 +295,95 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     this->omega_BN_B = omega_BN_B;
     Eigen::Matrix3d omegaTilde_BN_B = eigenTilde(this->omega_BN_B);
 
-    // update omega_Pn_B
+    Eigen::MatrixXd MRho = Eigen::MatrixXd::Zero(this->N, this->N);
+    Eigen::MatrixXd ARhoStar = Eigen::MatrixXd::Zero(this->N, 3);
+    Eigen::MatrixXd BRhoStar = Eigen::MatrixXd::Zero(this->N, 3);
+    Eigen::VectorXd CRhoStar = Eigen::VectorXd::Zero(this->N);
 
-    // Map gravity to body frame
-    Eigen::Vector3d g_B;
-    g_B = this->dcm_BN * g_N;
-    Eigen::Vector3d F_g = Eigen::Vector3d::Zero().transpose();
+    this->computeMRho(MRho);
+    this->computeARhoStar(ARhoStar);
+    this->computeBRhoStar(BRhoStar);
+    this->computeCRhoStar(CRhoStar, g_N);
 
-    // todo: add lock flag if statement (somewhere in for loop)
+    this->ARho = MRho.inverse() * ARhoStar;
+    this->BRho = MRho.inverse() * BRhoStar;
+    this->CRho = MRho.inverse() * CRhoStar;
 
-    // Compute MRho
-    Eigen::MatrixXd MRho(this->N, this->N);
+    this->computeBackSubContributions(backSubContr);
+}
+
+void linearTranslationNDOFStateEffector::computeMRho(Eigen::MatrixXd& MRho)
+{
     for (int n = 0; n<this->N; n++) {
-        if (this->translatingBodyVec[n].isAxisLocked)
-            continue;
         for (int i = 0; i<this->N; i++) {
             MRho(n,i) = 0.0;
+            if ((this->translatingBodyVec[n].isAxisLocked || this->translatingBodyVec[i].isAxisLocked) && n != i)
+                continue;
             for (int j = (i<=n) ? n : i; j<this->N; j++) {
                 MRho(n,i) += this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[j].mass
                     * this->translatingBodyVec[i].fHat_B;
             }
         }
     }
+}
 
-    // Compute ARhoStar, BRhoStar and CRhoStar
-    Eigen::MatrixXd ARhoStar(this->N, 3);
-    Eigen::MatrixXd BRhoStar(this->N, 3);
-    Eigen::VectorXd CRhoStar(this->N);
+void linearTranslationNDOFStateEffector::computeARhoStar(Eigen::MatrixXd& ARhoStar)
+{
     for (int n = 0; n<this->N; n++) {
         if (this->translatingBodyVec[n].isAxisLocked)
             continue;
-        ARhoStar.row(n) = Eigen::Vector3d::Zero().transpose();
-        BRhoStar.row(n) = Eigen::Vector3d::Zero().transpose();
+        for (int i = n; i<this->N; i++) {
+            ARhoStar.row(n) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass;
+        }
+    }
+}
+
+void linearTranslationNDOFStateEffector::computeBRhoStar(Eigen::MatrixXd& BRhoStar)
+{
+    for (int n = 0; n<this->N; n++) {
+        if (this->translatingBodyVec[n].isAxisLocked)
+            continue;
+        for (int i = n; i<this->N; i++) {
+            Eigen::Vector3d r_FciB_B = this->translatingBodyVec[i].r_FcB_B;
+            Eigen::Matrix3d rTilde_FciB_B = eigenTilde(r_FciB_B);
+
+            BRhoStar.row(n) += this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass * rTilde_FciB_B;
+        }
+    }
+}
+
+void linearTranslationNDOFStateEffector::computeCRhoStar(Eigen::VectorXd& CRhoStar,
+                                                      const Eigen::Vector3d& g_N)
+{
+    Eigen::Matrix3d omegaTilde_BN_B = eigenTilde(this->omega_BN_B);
+
+    // Map gravity to body frame
+    Eigen::Vector3d g_B;
+    g_B = this->dcm_BN * g_N;
+    Eigen::Vector3d F_g = Eigen::Vector3d::Zero().transpose();
+
+    for (int n = 0; n<this->N; n++) {
+        if (this->translatingBodyVec[n].isAxisLocked)
+            continue;
         CRhoStar(n, 0) = this->translatingBodyVec[n].u
                            - this->translatingBodyVec[n].k * (this->translatingBodyVec[n].rho -
                            this->translatingBodyVec[n].rhoRef) - this->translatingBodyVec[n].c *
                            (this->translatingBodyVec[n].rhoDot - this->translatingBodyVec[n].rhoDotRef);
         for (int i = n; i<this->N; i++) {
             Eigen::Vector3d r_FciB_B = this->translatingBodyVec[i].r_FcB_B;
-            Eigen::Matrix3d rTilde_FciB_B = eigenTilde(r_FciB_B);
             Eigen::Vector3d rPrime_FciB_B = this->translatingBodyVec[i].rPrime_FcB_B;
 
             F_g = this->translatingBodyVec[i].mass * g_B;
-            ARhoStar.row(n) -= this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass;
-            BRhoStar.row(n) += this->translatingBodyVec[n].fHat_B.transpose() * this->translatingBodyVec[i].mass * rTilde_FciB_B;
             CRhoStar(n, 0) += this->translatingBodyVec[n].fHat_B.transpose() * (F_g - this->translatingBodyVec[i].mass *
                               (omegaTilde_BN_B * omegaTilde_BN_B * r_FciB_B + 2 * omegaTilde_BN_B * rPrime_FciB_B));
         }
     }
+}
 
-    // Define the ARho, BRho and CRho matrices
-    this->ARho = MRho.inverse() * ARhoStar;
-    this->BRho = MRho.inverse() * BRhoStar;
-    this->CRho = MRho.inverse() * CRhoStar;
+void linearTranslationNDOFStateEffector::computeBackSubContributions(BackSubMatrices& backSubContr) const
+{
+    Eigen::Matrix3d omegaTilde_BN_B = eigenTilde(this->omega_BN_B);
 
-    //
     for (int i = 0; i<this->N; i++) {
     Eigen::Matrix3d rTilde_FciB_B = eigenTilde(this->translatingBodyVec[i].r_FcB_B);
     Eigen::Vector3d rPrime_FciB_B = this->translatingBodyVec[i].rPrime_FcB_B;
@@ -348,6 +404,8 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     }
 }
 
+
+
 /*! This method is used to find the derivatives for the SB stateEffector: rhoDDot and the kinematic derivative */
 //YES
 void linearTranslationNDOFStateEffector::computeDerivatives(double integTime, Eigen::Vector3d rDDot_BN_N, Eigen::Vector3d omegaDot_BN_B, Eigen::Vector3d sigma_BN)
@@ -363,7 +421,6 @@ void linearTranslationNDOFStateEffector::computeDerivatives(double integTime, Ei
 }
 
 /*! This method is for calculating the contributions of the SB state effector to the energy and momentum of the spacecraft */
-//YES
 void linearTranslationNDOFStateEffector::updateEnergyMomContributions(double integTime,
                                                                       Eigen::Vector3d & rotAngMomPntCContr_B,
                                                                       double & rotEnergyContr,
@@ -395,7 +452,6 @@ void linearTranslationNDOFStateEffector::updateEnergyMomContributions(double int
 }
 
 /*! This method computes the translating body states relative to the inertial frame */
-//YES
 void linearTranslationNDOFStateEffector::computeTranslatingBodyInertialStates()
 {
     for(auto& translatingBody: this->translatingBodyVec) {
@@ -413,41 +469,10 @@ void linearTranslationNDOFStateEffector::computeTranslatingBodyInertialStates()
 }
 
 /*! This method is used so that the simulation will ask SB to update messages */
-//YES
 void linearTranslationNDOFStateEffector::UpdateState(uint64_t CurrentSimNanos)
 {
-    //! - Read the incoming command array
-    if (this->motorForceInMsg.isLinked() && this->motorForceInMsg.isWritten()) {
-        ArrayMotorForceMsgPayload incomingCmdBuffer;
-        incomingCmdBuffer = this->motorForceInMsg();
-        int i = 0;
-        for(auto& translatingBody: this->translatingBodyVec) {
-            translatingBody.u = incomingCmdBuffer.motorForce[i];
-            i++;
-        }
-    }
-    
-    //! - Zero the command buffer and read the incoming command array
-    if (this->motorLockInMsg.isLinked() && this->motorLockInMsg.isWritten()) {
-        ArrayEffectorLockMsgPayload incomingLockBuffer;
-        incomingLockBuffer = this->motorLockInMsg();
-        int i = 0;
-        for(auto& translatingBody: this->translatingBodyVec) {
-            translatingBody.isAxisLocked = incomingLockBuffer.effectorLockFlag[i];
-            i++;
-        }
-    }
-
-    int translatingBodyIndex = 0;
-    for(auto& translatingBody: this->translatingBodyVec) {
-        if (this->translatingBodyRefInMsgs[translatingBodyIndex].isLinked() && this->translatingBodyRefInMsgs[translatingBodyIndex].isWritten()) {
-            LinearTranslationRigidBodyMsgPayload incomingRefBuffer;
-            incomingRefBuffer = this->translatingBodyRefInMsgs[translatingBodyIndex]();
-            translatingBody.rhoRef = incomingRefBuffer.rho;
-            translatingBody.rhoDotRef = incomingRefBuffer.rhoDot;
-        }
-        translatingBodyIndex++;
-    }
+    /* Read input messages*/
+    this->readInputMessages();
 
     /* Compute translating body inertial states */
     this->computeTranslatingBodyInertialStates();
