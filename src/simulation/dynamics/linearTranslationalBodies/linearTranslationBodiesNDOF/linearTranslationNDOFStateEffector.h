@@ -54,7 +54,7 @@ public:
     /** setter for `IPntFc_F` property */
     void setIPntFc_F(Eigen::Matrix3d IPntFc_F) {this->IPntFc_F = IPntFc_F;};
     /** setter for `dcm_FB` property */
-    void setDCM_FB(Eigen::Matrix3d dcm_FB) {this->dcm_FB = dcm_FB;};
+    void setDCM_FP(Eigen::Matrix3d dcm_FP) {this->dcm_FP = dcm_FP;};
 
     /** setter for `mass` property */
     double getMass() const {return this->mass;};

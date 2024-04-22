@@ -100,80 +100,86 @@ def translatingBody(show_plots):
 
     # define properties
     translatingBody1 = linearTranslationNDOFStateEffector.translatingBody()
-    mass = 20.0
-    IPntFc_F = [[50.0, 0.0, 0.0],
-                                 [0.0, 80.0, 0.0],
-                                 [0.0, 0.0, 60.0]]
-    dcm_FP = [[1.0, 0.0, 0.0],
-                               [0.0, 1.0, 0.0],
-                               [0.0, 0.0, 1.0]]  # change this to FP
-    r_FcF_F = [[-1.0], [1.0], [0.0]]
-    r_F0P_P = [[-5.0], [4.0], [3.0]]
-    fHat_P = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
-    rhoInit = 1.0
-    rhoDotInit = 0.05
-    k = 100.0
-    c = 0
 
-    translatingBody1.setMass(mass)
-    translatingBody1.setIPntFc_F(IPntFc_F)
-    translatingBody1.setDCM_FP(dcm_FP)
-    translatingBody1.setR_FcF_F(r_FcF_F)
-    translatingBody1.setR_F0P_P(r_F0P_P)
-    translatingBody1.setFHat_P(fHat_P)
-    translatingBody1.setRhoInit(rhoInit)
-    translatingBody1.setRhoDotInit(rhoDotInit)
-    translatingBody1.setK(k)
-    translatingBody1.setC(c)
+    translatingBody1.setMass(np.random.uniform(5.0, 50.0))
+    translatingBody1.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
+                                 [0.0, np.random.uniform(5.0, 100.0), 0.0],
+                                 [0.0, 0.0, np.random.uniform(5.0, 100.0)]])
+    translatingBody1.setDCM_FP([[0.0, -1.0, 0.0], [0.0, 0.0, -1.0], [1.0, 0.0, 0.0]])
+    translatingBody1.setR_FcF_F([[np.random.uniform(-1.0, 1.0)],
+                                [np.random.uniform(-1.0, 1.0)],
+                                [np.random.uniform(-1.0, 1.0)]])
+    translatingBody1.setR_F0P_P([[np.random.uniform(-1.0, 1.0)],
+                                [np.random.uniform(-1.0, 1.0)],
+                                [np.random.uniform(-1.0, 1.0)]])
+    translatingBody1.setFHat_P([[3.0 / 5.0], [4.0 / 5.0], [0.0]])
+    translatingBody1.setRhoInit(np.random.uniform(-5.0, 10.0))
+    translatingBody1.setRhoDotInit(0.05)
+    translatingBody1.setK(np.random.random())
     
     translatingBodyEffector.addTranslatingBody(translatingBody1)
 
+
     translatingBody2 = linearTranslationNDOFStateEffector.translatingBody()
-    translatingBody2.mass = 20.0
-    translatingBody2.IPntFc_F = [[70.0, 0.0, 0.0],
-                                 [0.0, 50.0, 0.0],
-                                 [0.0, 0.0, 60.0]]
-    translatingBody2.dcm_FP = [[1.0, 0.0, 0.0],
-                               [0.0, 1.0, 0.0],
-                               [0.0, 0.0, 1.0]]  # change this to FP
-    translatingBody2.r_FcF_F = [[-1.0], [1.0], [0.0]]
-    translatingBody2.r_F0P_P = [[-5.0], [4.0], [3.0]]
-    translatingBody2.fHat_P = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
-    translatingBody2.rhoInit = 1.0
-    translatingBody2.rhoDotInit = 0.05
-    translatingBody2.k = 100.0
+
+    translatingBody2.setMass(np.random.uniform(5.0, 50.0))
+    translatingBody2.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
+                                  [0.0, np.random.uniform(5.0, 100.0), 0.0],
+                                  [0.0, 0.0, np.random.uniform(5.0, 100.0)]])
+    translatingBody2.setDCM_FP([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    translatingBody2.setR_FcF_F([[np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)]])
+    translatingBody2.setR_F0P_P([[np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)]])
+    translatingBody2.setFHat_P([[3.0 / 5.0], [4.0 / 5.0], [0.0]])
+    translatingBody2.setRhoInit(np.random.uniform(-5.0, 5.0))
+    translatingBody2.setRhoDotInit(0.05)
+    translatingBody2.setK(np.random.random())
+
     translatingBodyEffector.addTranslatingBody(translatingBody2)
 
+
     translatingBody3 = linearTranslationNDOFStateEffector.translatingBody()
-    translatingBody3.mass = 20.0
-    translatingBody3.IPntFc_F = [[40.0, 0.0, 0.0],
-                                 [0.0, 60.0, 0.0],
-                                 [0.0, 0.0, 50.0]]
-    translatingBody3.dcm_FP = [[1.0, 0.0, 0.0],
-                               [0.0, 1.0, 0.0],
-                               [0.0, 0.0, 1.0]]  # change this to FP
-    translatingBody3.r_FcF_F = [[-1.0], [1.0], [0.0]]
-    translatingBody3.r_F0P_P = [[-5.0], [4.0], [3.0]]
-    translatingBody3.fHat_P = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
-    translatingBody3.rhoInit = 1.0
-    translatingBody3.rhoDotInit = 0.05
-    translatingBody3.k = 100.0
+
+    translatingBody3.setMass(np.random.uniform(5.0, 50.0))
+    translatingBody3.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
+                                  [0.0, np.random.uniform(5.0, 100.0), 0.0],
+                                  [0.0, 0.0, np.random.uniform(5.0, 100.0)]])
+    translatingBody3.setDCM_FP([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    translatingBody3.setR_FcF_F([[np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)]])
+    translatingBody3.setR_F0P_P([[np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)]])
+    translatingBody3.setFHat_P([[3.0 / 5.0], [4.0 / 5.0], [0.0]])
+    translatingBody3.setRhoInit(np.random.uniform(-5.0, 5.0))
+    translatingBody3.setRhoDotInit(0.05)
+    translatingBody3.setK(np.random.random())
+
     translatingBodyEffector.addTranslatingBody(translatingBody3)
 
+
     translatingBody4 = linearTranslationNDOFStateEffector.translatingBody()
-    translatingBody4.mass = 20.0
-    translatingBody4.IPntFc_F = [[40.0, 0.0, 0.0],
-                                 [0.0, 60.0, 0.0],
-                                 [0.0, 0.0, 50.0]]
-    translatingBody4.dcm_FP = [[1.0, 0.0, 0.0],
-                               [0.0, 1.0, 0.0],
-                               [0.0, 0.0, 1.0]]  # change this to FP
-    translatingBody4.r_FcF_F = [[-1.0], [1.0], [0.0]]
-    translatingBody4.r_F0P_P = [[-5.0], [4.0], [3.0]]
-    translatingBody4.fHat_P = [[0.0], [0.0], [1.0]]  # change this to P
-    translatingBody4.rhoInit = 1.0
-    translatingBody4.rhoDotInit = 0.05
-    translatingBody4.k = 100.0
+
+    translatingBody4.setMass(np.random.uniform(5.0, 50.0))
+    translatingBody4.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
+                                  [0.0, np.random.uniform(5.0, 100.0), 0.0],
+                                  [0.0, 0.0, np.random.uniform(5.0, 100.0)]])
+    translatingBody4.setDCM_FP([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+    translatingBody4.setR_FcF_F([[np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)]])
+    translatingBody4.setR_F0P_P([[np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)],
+                                 [np.random.uniform(-1.0, 1.0)]])
+    translatingBody4.setFHat_P([[0.0], [0.0], [1.0]])
+    translatingBody4.setRhoInit(np.random.uniform(-5.0, 5.0))
+    translatingBody4.setRhoDotInit(0.05)
+    translatingBody4.setK(np.random.random())
+
     translatingBodyEffector.addTranslatingBody(translatingBody4)
 
     # Add body to spacecraft
@@ -204,8 +210,6 @@ def translatingBody(show_plots):
     # Log the spacecraft state message
     datLog = scObject.scStateOutMsg.recorder()
     unitTestSim.AddModelToTask(unitTaskName, datLog)
-
-    # breakpoint()
 
     # Initialize the simulation
     unitTestSim.InitializeSimulation()
