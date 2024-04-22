@@ -130,6 +130,8 @@ private:
     Eigen::Vector3d v_FcN_N;            //!< [m/s] inertial velocity vector of Sc relative to inertial frame
     Eigen::Vector3d sigma_FN;           //!< -- MRP attitude of frame S relative to inertial frame
     Eigen::Vector3d omega_FN_F;         //!< [rad/s] inertial translating body frame angular velocity vector
+
+    BSKLogger bskLogger;
 };
 
 /*! @brief translating body state effector class */
@@ -147,10 +149,10 @@ public:
 
     void addTranslatingBody(translatingBody const& newBody); //!< class method
 
-    void setNameOfRhoState(const std::string& nameOfRhoState) {this->nameOfRhoState = nameOfRhoState}
-    void setNameOfRhoDotState(const std::string& nameOfRhoDotState) {this->nameOfRhoDotState = nameOfRhoDotState}
-    std::string getNameOfRhoState() const {return this->nameOfRhoState}
-    std::string getNameOfRhoDotState() const {return this->nameOfRhoDotState}
+    void setNameOfRhoState(const std::string& nameOfRhoState) { this->nameOfRhoState = nameOfRhoState; };
+    void setNameOfRhoDotState(const std::string& nameOfRhoDotState) { this->nameOfRhoDotState = nameOfRhoDotState; };
+    std::string getNameOfRhoState() const { return this->nameOfRhoState; };
+    std::string getNameOfRhoDotState() const { return this->nameOfRhoDotState; };
 
 private:
     static uint64_t effectorID;     //!< [] ID number of this effector

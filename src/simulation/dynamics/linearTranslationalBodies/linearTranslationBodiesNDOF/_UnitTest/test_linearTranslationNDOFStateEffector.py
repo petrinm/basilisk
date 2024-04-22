@@ -100,19 +100,32 @@ def translatingBody(show_plots):
 
     # define properties
     translatingBody1 = linearTranslationNDOFStateEffector.translatingBody()
-    translatingBody1.mass = 20.0
-    translatingBody1.IPntFc_F = [[50.0, 0.0, 0.0],
+    mass = 20.0
+    IPntFc_F = [[50.0, 0.0, 0.0],
                                  [0.0, 80.0, 0.0],
                                  [0.0, 0.0, 60.0]]
-    translatingBody1.dcm_FP = [[1.0, 0.0, 0.0],
+    dcm_FP = [[1.0, 0.0, 0.0],
                                [0.0, 1.0, 0.0],
                                [0.0, 0.0, 1.0]]  # change this to FP
-    translatingBody1.r_FcF_F = [[-1.0], [1.0], [0.0]]
-    translatingBody1.r_F0P_P = [[-5.0], [4.0], [3.0]]
-    translatingBody1.fHat_P = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
-    translatingBody1.rhoInit = 1.0
-    translatingBody1.rhoDotInit = 0.05
-    translatingBody1.k = 100.0
+    r_FcF_F = [[-1.0], [1.0], [0.0]]
+    r_F0P_P = [[-5.0], [4.0], [3.0]]
+    fHat_P = [[3.0 / 5.0], [4.0 / 5.0], [0.0]]  # change this to P
+    rhoInit = 1.0
+    rhoDotInit = 0.05
+    k = 100.0
+    c = 0
+
+    translatingBody1.setMass(mass)
+    translatingBody1.setIPntFc_F(IPntFc_F)
+    translatingBody1.setDCM_FP(dcm_FP)
+    translatingBody1.setR_FcF_F(r_FcF_F)
+    translatingBody1.setR_F0P_P(r_F0P_P)
+    translatingBody1.setFHat_P(fHat_P)
+    translatingBody1.setRhoInit(rhoInit)
+    translatingBody1.setRhoDotInit(rhoDotInit)
+    translatingBody1.setK(k)
+    translatingBody1.setC(c)
+    
     translatingBodyEffector.addTranslatingBody(translatingBody1)
 
     translatingBody2 = linearTranslationNDOFStateEffector.translatingBody()

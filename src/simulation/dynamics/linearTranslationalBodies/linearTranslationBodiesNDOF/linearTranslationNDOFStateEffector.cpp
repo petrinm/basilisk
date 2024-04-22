@@ -47,7 +47,7 @@ linearTranslationNDOFStateEffector::~linearTranslationNDOFStateEffector()
     linearTranslationNDOFStateEffector::effectorID --;    /* reset the panel ID*/
 }
 
-void linearTranslationNDOFStateEffector::setMass(double mass) {
+void translatingBody::setMass(double mass) {
     if (mass > 0.0)
         this->mass = mass;
     else {
@@ -55,7 +55,7 @@ void linearTranslationNDOFStateEffector::setMass(double mass) {
     }
 }
 
-void linearTranslationNDOFStateEffector::setFHat_B(Eigen::Vector3d fHat_P) {
+void translatingBody::setFHat_P(Eigen::Vector3d fHat_P) {
     if (fHat_P.norm() > 0.01) {
         this->fHat_P = fHat_P.normalized();
     }
@@ -64,7 +64,7 @@ void linearTranslationNDOFStateEffector::setFHat_B(Eigen::Vector3d fHat_P) {
     }
 }
 
-void linearTranslationNDOFStateEffector::setK(double k) {
+void translatingBody::setK(double k) {
     if (k >= 0.0)
         this->k = k;
     else {
@@ -72,7 +72,7 @@ void linearTranslationNDOFStateEffector::setK(double k) {
     }
 }
 
-void linearTranslationNDOFStateEffector::setC(double c) {
+void translatingBody::setC(double c) {
     if (c >= 0.0)
         this->c = c;
     else {
