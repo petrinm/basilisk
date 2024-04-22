@@ -115,7 +115,6 @@ private:
     Eigen::Vector3d rPrime_FP_B;        //!< [m/s] vector from parent frame to current F frame
     Eigen::Vector3d rPrime_FF0_B;
 
-// STILL USE THIS
     Eigen::Vector3d omega_FN_B;        //!< [rad/s] angular velocity of the P frame wrt the N frame in B frame components
     Eigen::Vector3d omega_SB_B; // zero for all bodies
     Eigen::Matrix3d omegaTilde_FB_B;
@@ -136,34 +135,9 @@ private:
 /*! @brief translating body state effector class */
 class linearTranslationNDOFStateEffector: public StateEffector, public SysModel {
 public:
-// what does final mean
 
     linearTranslationNDOFStateEffector();      //!< -- Contructor
     ~linearTranslationNDOFStateEffector() final;     //!< -- Destructor
-    void Reset(uint64_t CurrentClock) final;      //!< -- Method for reset
-    void writeOutputStateMessages(uint64_t CurrentClock) final;   //!< -- Method for writing the output messages
-    void UpdateState(uint64_t CurrentSimNanos) final;             //!< -- Method for updating information
-    void registerStates(DynParamManager& statesIn) final;         //!< -- Method for registering the SB states
-    void linkInStates(DynParamManager& states) final;             //!< -- Method for getting access to other states
-    void updateContributions(double integTime,
-                             BackSubMatrices& backSubContr,
-                             Eigen::Vector3d sigma_BN,
-                             Eigen::Vector3d omega_BN_B,
-                             Eigen::Vector3d g_N) final;  //!< -- Method for back-substitution contributions
-    void computeDerivatives(double integTime,
-                            Eigen::Vector3d rDDot_BN_N,
-                            Eigen::Vector3d omegaDot_BN_B,
-                            Eigen::Vector3d sigma_BN) final;                         //!< -- Method for SB to compute its derivatives
-    void updateEffectorMassProps(double integTime) final;         //!< -- Method for giving the s/c the HRB mass props and prop rates
-    void updateEnergyMomContributions(double integTime,
-                                      Eigen::Vector3d& rotAngMomPntCContr_B,
-                                      double& rotEnergyContr,
-                                      Eigen::Vector3d omega_BN_B) final;       //!< -- Method for computing energy and momentum for SBs
-    // ARE THESE TWO NECESSARY
-    void prependSpacecraftNameToStates() final;                   //!< Method used for multiple spacecraft
-    void computeTranslatingBodyInertialStates();               //!< Method for computing the SB's states
-
-    void addTranslatingBody(translatingBody const& newBody); //!< class method
 
     std::vector<Message<LinearTranslationRigidBodyMsgPayload>*> translatingBodyOutMsgs;       //!< vector of state output messages
     std::vector<Message<SCStatesMsgPayload>*> translatingBodyConfigLogOutMsgs;     //!< vector of spinning body state config log messages
@@ -171,8 +145,12 @@ public:
     ReadFunctor<ArrayMotorForceMsgPayload> motorForceInMsg;                   //!< -- (optional) motor force input message name
     ReadFunctor<ArrayEffectorLockMsgPayload> motorLockInMsg;                    //!< -- (optional) motor lock input message name
 
-    std::string nameOfRhoState;                               //!< -- identifier for the theta state data container
-    std::string nameOfRhoDotState;                            //!< -- identifier for the thetaDot state data container
+    void addTranslatingBody(translatingBody const& newBody); //!< class method
+
+    void setNameOfRhoState(const std::string& nameOfRhoState) {this->nameOfRhoState = nameOfRhoState}
+    void setNameOfRhoDotState(const std::string& nameOfRhoDotState) {this->nameOfRhoDotState = nameOfRhoDotState}
+    std::string getNameOfRhoState() const {return this->nameOfRhoState}
+    std::string getNameOfRhoDotState() const {return this->nameOfRhoDotState}
 
 private:
     static uint64_t effectorID;     //!< [] ID number of this effector
@@ -194,6 +172,32 @@ private:
     Eigen::MatrixXd* inertialVelocityProperty = nullptr;    //!< [m] v_N inertial velocity relative to system spice zeroBase/refBase
     StateData* rhoState = nullptr;
     StateData* rhoDotState = nullptr;
+    std::string nameOfRhoState;                               //!< -- identifier for the theta state data container
+    std::string nameOfRhoDotState;                            //!< -- identifier for the thetaDot state data container
+
+    // module functions
+    void Reset(uint64_t CurrentClock) final;      //!< -- Method for reset
+    void writeOutputStateMessages(uint64_t CurrentClock) final;   //!< -- Method for writing the output messages
+    void UpdateState(uint64_t CurrentSimNanos) final;             //!< -- Method for updating information
+    void registerStates(DynParamManager& statesIn) final;         //!< -- Method for registering the SB states
+    void linkInStates(DynParamManager& states) final;             //!< -- Method for getting access to other states
+    void updateContributions(double integTime,
+                             BackSubMatrices& backSubContr,
+                             Eigen::Vector3d sigma_BN,
+                             Eigen::Vector3d omega_BN_B,
+                             Eigen::Vector3d g_N) final;  //!< -- Method for back-substitution contributions
+    void computeDerivatives(double integTime,
+                            Eigen::Vector3d rDDot_BN_N,
+                            Eigen::Vector3d omegaDot_BN_B,
+                            Eigen::Vector3d sigma_BN) final;                         //!< -- Method for SB to compute its derivatives
+    void updateEffectorMassProps(double integTime) final;         //!< -- Method for giving the s/c the HRB mass props and prop rates
+    void updateEnergyMomContributions(double integTime,
+                                      Eigen::Vector3d& rotAngMomPntCContr_B,
+                                      double& rotEnergyContr,
+                                      Eigen::Vector3d omega_BN_B) final;       //!< -- Method for computing energy and momentum for SBs
+
+    void prependSpacecraftNameToStates() final;                   //!< Method used for multiple spacecraft
+    void computeTranslatingBodyInertialStates();               //!< Method for computing the SB's states
 };
 
 #endif /* LINEAR_TRANSLATION_N_DOF_STATE_EFFECTOR_H */

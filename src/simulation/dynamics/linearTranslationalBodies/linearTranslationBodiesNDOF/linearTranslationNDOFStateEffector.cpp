@@ -47,6 +47,39 @@ linearTranslationNDOFStateEffector::~linearTranslationNDOFStateEffector()
     linearTranslationNDOFStateEffector::effectorID --;    /* reset the panel ID*/
 }
 
+void linearTranslationNDOFStateEffector::setMass(double mass) {
+    if (mass > 0.0)
+        this->mass = mass;
+    else {
+        this->bskLogger.bskLog(BSK_ERROR, "Mass must be greater than 0.");
+    }
+}
+
+void linearTranslationNDOFStateEffector::setFHat_B(Eigen::Vector3d fHat_P) {
+    if (fHat_P.norm() > 0.01) {
+        this->fHat_P = fHat_P.normalized();
+    }
+    else {
+        this->bskLogger.bskLog(BSK_ERROR, "Norm of fHat must be greater than 0.");
+    }
+}
+
+void linearTranslationNDOFStateEffector::setK(double k) {
+    if (k >= 0.0)
+        this->k = k;
+    else {
+        this->bskLogger.bskLog(BSK_ERROR, "k must be greater than or equal to 0.");
+    }
+}
+
+void linearTranslationNDOFStateEffector::setC(double c) {
+    if (c >= 0.0)
+        this->c = c;
+    else {
+        this->bskLogger.bskLog(BSK_ERROR, "c must be greater than or equal to 0.");
+    }
+}
+
 /*! This method is used to reset the module. */
 //YES
 void linearTranslationNDOFStateEffector::Reset(uint64_t CurrentClock)
