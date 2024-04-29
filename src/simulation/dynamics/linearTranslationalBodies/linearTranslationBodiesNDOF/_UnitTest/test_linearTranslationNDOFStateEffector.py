@@ -54,9 +54,9 @@ def test_translatingBody(show_plots, function):
     r"""
     **Validation Test Description**
 
-    This unit test sets up a spacecraft with a single-axis rotating rigid body attached to a rigid hub. The spinning
-    body's center of mass is off-center from the spinning axis and the position of the axis is arbitrary. The scenario
-    includes gravity acting on both the spacecraft and the effector.
+    This unit test sets up a spacecraft with four single-axis translating rigid bodies attached to a rigid hub. Each
+    translating body's center of mass is off-center from the translating axis and the position of the axis is arbitrary.
+    The scenario includes gravity acting on both the spacecraft and the effector.
 
     **Description of Variables Being Tested**
 
@@ -82,7 +82,7 @@ def translatingBodyNoInput(show_plots):
     unitTaskName = "unitTask"  # arbitrary name (don't change)
     unitProcessName = "TestProcess"  # arbitrary name (don't change)
 
-    #   Create a sim module as an empty container
+    # Create a sim module as an empty container
     unitTestSim = SimulationBaseClass.SimBaseClass()
 
     # Create test thread
@@ -90,13 +90,12 @@ def translatingBodyNoInput(show_plots):
     testProc = unitTestSim.CreateNewProcess(unitProcessName)
     testProc.addTask(unitTestSim.CreateNewTask(unitTaskName, testProcessRate))
 
-    # Create two hinged rigid bodies
+    # Create four translating rigid bodies
     translatingBodyEffector = linearTranslationNDOFStateEffector.linearTranslationNDOFStateEffector()
     translatingBodyEffector.ModelTag = "translatingBodyEffector"
 
     # define properties
     translatingBody1 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody1.setMass(np.random.uniform(5.0, 50.0))
     translatingBody1.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                  [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -112,12 +111,9 @@ def translatingBodyNoInput(show_plots):
     translatingBody1.setRhoInit(np.random.uniform(-5.0, 10.0))
     translatingBody1.setRhoDotInit(0.05)
     translatingBody1.setK(np.random.random())
-    
     translatingBodyEffector.addTranslatingBody(translatingBody1)
 
-
     translatingBody2 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody2.setMass(np.random.uniform(5.0, 50.0))
     translatingBody2.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -133,12 +129,9 @@ def translatingBodyNoInput(show_plots):
     translatingBody2.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody2.setRhoDotInit(0.05)
     translatingBody2.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody2)
 
-
     translatingBody3 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody3.setMass(np.random.uniform(5.0, 50.0))
     translatingBody3.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -154,12 +147,9 @@ def translatingBodyNoInput(show_plots):
     translatingBody3.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody3.setRhoDotInit(0.05)
     translatingBody3.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody3)
 
-
     translatingBody4 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody4.setMass(np.random.uniform(5.0, 50.0))
     translatingBody4.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -175,7 +165,6 @@ def translatingBodyNoInput(show_plots):
     translatingBody4.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody4.setRhoDotInit(0.05)
     translatingBody4.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody4)
 
     # Add body to spacecraft
@@ -215,7 +204,6 @@ def translatingBodyNoInput(show_plots):
     unitTestSim.AddModelToTask(unitTaskName, scObjectLog)
 
     # Add states to log
-    # add more when 1 is working
     rho1Data = translatingBodyEffector.translatingBodyOutMsgs[0].recorder()
     unitTestSim.AddModelToTask(unitTaskName, rho1Data)
     rho2Data = translatingBodyEffector.translatingBodyOutMsgs[1].recorder()
@@ -237,7 +225,6 @@ def translatingBodyNoInput(show_plots):
     orbEnergy = scObjectLog.totOrbEnergy
     rho1 = rho1Data.rho
     rho1Dot = rho1Data.rhoDot
-    # add more when 1 is working
     rho2 = rho2Data.rho
     rho2Dot = rho2Data.rhoDot
     rho3 = rho3Data.rho
@@ -298,7 +285,7 @@ def translatingBodyNoInput(show_plots):
     plt.plot(rho4Data.times() * 1e-9, rho4, label=r'$\rho_4$')
     plt.legend(loc='best')
     plt.xlabel('time (s)')
-    plt.ylabel('Angle')
+    plt.ylabel('Displacement')
 
     plt.figure()
     plt.clf()
@@ -308,7 +295,7 @@ def translatingBodyNoInput(show_plots):
     plt.plot(rho4Data.times() * 1e-9, rho4Dot, label=r'$\dot{\rho}_4$')
     plt.legend(loc='best')
     plt.xlabel('time (s)')
-    plt.ylabel('Angle Rate')
+    plt.ylabel('Displacement Rate')
 
     if show_plots:
         plt.show()
@@ -336,7 +323,7 @@ def translatingBodyLockAxis(show_plots):
     unitTaskName = "unitTask"  # arbitrary name (don't change)
     unitProcessName = "TestProcess"  # arbitrary name (don't change)
 
-    #   Create a sim module as an empty container
+    # Create a sim module as an empty container
     unitTestSim = SimulationBaseClass.SimBaseClass()
 
     # Create test thread
@@ -344,13 +331,12 @@ def translatingBodyLockAxis(show_plots):
     testProc = unitTestSim.CreateNewProcess(unitProcessName)
     testProc.addTask(unitTestSim.CreateNewTask(unitTaskName, testProcessRate))
 
-    # Create two hinged rigid bodies
+    # Create four translating rigid bodies
     translatingBodyEffector = linearTranslationNDOFStateEffector.linearTranslationNDOFStateEffector()
     translatingBodyEffector.ModelTag = "translatingBodyEffector"
 
     # define properties
     translatingBody1 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody1.setMass(np.random.uniform(5.0, 50.0))
     translatingBody1.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -366,11 +352,9 @@ def translatingBodyLockAxis(show_plots):
     translatingBody1.setRhoInit(np.random.uniform(-5.0, 10.0))
     translatingBody1.setRhoDotInit(0.05)
     translatingBody1.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody1)
 
     translatingBody2 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody2.setMass(np.random.uniform(5.0, 50.0))
     translatingBody2.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -386,11 +370,9 @@ def translatingBodyLockAxis(show_plots):
     translatingBody2.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody2.setRhoDotInit(0.05)
     translatingBody2.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody2)
 
     translatingBody3 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody3.setMass(np.random.uniform(5.0, 50.0))
     translatingBody3.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -406,11 +388,9 @@ def translatingBodyLockAxis(show_plots):
     translatingBody3.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody3.setRhoDotInit(0.05)
     translatingBody3.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody3)
 
     translatingBody4 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody4.setMass(np.random.uniform(5.0, 50.0))
     translatingBody4.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -426,7 +406,6 @@ def translatingBodyLockAxis(show_plots):
     translatingBody4.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody4.setRhoDotInit(0.05)
     translatingBody4.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody4)
 
     # Add body to spacecraft
@@ -472,7 +451,6 @@ def translatingBodyLockAxis(show_plots):
     unitTestSim.AddModelToTask(unitTaskName, scObjectLog)
 
     # Add states to log
-    # add more when 1 is working
     rho1Data = translatingBodyEffector.translatingBodyOutMsgs[0].recorder()
     unitTestSim.AddModelToTask(unitTaskName, rho1Data)
     rho2Data = translatingBodyEffector.translatingBodyOutMsgs[1].recorder()
@@ -494,7 +472,6 @@ def translatingBodyLockAxis(show_plots):
     orbEnergy = scObjectLog.totOrbEnergy
     rho1 = rho1Data.rho
     rho1Dot = rho1Data.rhoDot
-    # add more when 1 is working
     rho2 = rho2Data.rho
     rho2Dot = rho2Data.rhoDot
     rho3 = rho3Data.rho
@@ -555,7 +532,7 @@ def translatingBodyLockAxis(show_plots):
     plt.plot(rho4Data.times() * 1e-9, rho4, label=r'$\rho_4$')
     plt.legend(loc='best')
     plt.xlabel('time (s)')
-    plt.ylabel('Angle')
+    plt.ylabel('Displacement')
 
     plt.figure()
     plt.clf()
@@ -565,7 +542,7 @@ def translatingBodyLockAxis(show_plots):
     plt.plot(rho4Data.times() * 1e-9, rho4Dot, label=r'$\dot{\rho}_4$')
     plt.legend(loc='best')
     plt.xlabel('time (s)')
-    plt.ylabel('Angle Rate')
+    plt.ylabel('Displacement Rate')
 
     if show_plots:
         plt.show()
@@ -594,7 +571,7 @@ def translatingBodyCommandedForce(show_plots):
     unitTaskName = "unitTask"  # arbitrary name (don't change)
     unitProcessName = "TestProcess"  # arbitrary name (don't change)
 
-    #   Create a sim module as an empty container
+    # Create a sim module as an empty container
     unitTestSim = SimulationBaseClass.SimBaseClass()
 
     # Create test thread
@@ -602,13 +579,12 @@ def translatingBodyCommandedForce(show_plots):
     testProc = unitTestSim.CreateNewProcess(unitProcessName)
     testProc.addTask(unitTestSim.CreateNewTask(unitTaskName, testProcessRate))
 
-    # Create two hinged rigid bodies
+    # Create four translating rigid bodies
     translatingBodyEffector = linearTranslationNDOFStateEffector.linearTranslationNDOFStateEffector()
     translatingBodyEffector.ModelTag = "translatingBodyEffector"
 
     # define properties
     translatingBody1 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody1.setMass(np.random.uniform(5.0, 50.0))
     translatingBody1.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -624,11 +600,9 @@ def translatingBodyCommandedForce(show_plots):
     translatingBody1.setRhoInit(np.random.uniform(-5.0, 10.0))
     translatingBody1.setRhoDotInit(0.05)
     translatingBody1.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody1)
 
     translatingBody2 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody2.setMass(np.random.uniform(5.0, 50.0))
     translatingBody2.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -644,11 +618,9 @@ def translatingBodyCommandedForce(show_plots):
     translatingBody2.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody2.setRhoDotInit(0.05)
     translatingBody2.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody2)
 
     translatingBody3 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody3.setMass(np.random.uniform(5.0, 50.0))
     translatingBody3.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -664,11 +636,9 @@ def translatingBodyCommandedForce(show_plots):
     translatingBody3.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody3.setRhoDotInit(0.05)
     translatingBody3.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody3)
 
     translatingBody4 = linearTranslationNDOFStateEffector.translatingBody()
-
     translatingBody4.setMass(np.random.uniform(5.0, 50.0))
     translatingBody4.setIPntFc_F([[np.random.uniform(5.0, 100.0), 0.0, 0.0],
                                   [0.0, np.random.uniform(5.0, 100.0), 0.0],
@@ -684,7 +654,6 @@ def translatingBodyCommandedForce(show_plots):
     translatingBody4.setRhoInit(np.random.uniform(-5.0, 5.0))
     translatingBody4.setRhoDotInit(0.05)
     translatingBody4.setK(np.random.random())
-
     translatingBodyEffector.addTranslatingBody(translatingBody4)
 
     # Add body to spacecraft
@@ -730,7 +699,6 @@ def translatingBodyCommandedForce(show_plots):
     unitTestSim.AddModelToTask(unitTaskName, scObjectLog)
 
     # Add states to log
-    # add more when 1 is working
     rho1Data = translatingBodyEffector.translatingBodyOutMsgs[0].recorder()
     unitTestSim.AddModelToTask(unitTaskName, rho1Data)
     rho2Data = translatingBodyEffector.translatingBodyOutMsgs[1].recorder()
@@ -752,7 +720,6 @@ def translatingBodyCommandedForce(show_plots):
     orbEnergy = scObjectLog.totOrbEnergy
     rho1 = rho1Data.rho
     rho1Dot = rho1Data.rhoDot
-    # add more when 1 is working
     rho2 = rho2Data.rho
     rho2Dot = rho2Data.rhoDot
     rho3 = rho3Data.rho
@@ -769,7 +736,6 @@ def translatingBodyCommandedForce(show_plots):
     initialOrbEnergy = orbEnergy[0]
     finalOrbEnergy = orbEnergy[-1]
     initialRotEnergy = rotEnergy[0]
-    finalRotEnergy = rotEnergy[-1]
 
     # Plotting
     plt.close("all")
@@ -797,13 +763,6 @@ def translatingBodyCommandedForce(show_plots):
     plt.xlabel('time (s)')
     plt.ylabel('Relative Difference')
     plt.title('Rotational Angular Momentum')
-
-    plt.figure()
-    plt.clf()
-    plt.plot(timeSec, (rotEnergy - initialRotEnergy) / initialRotEnergy)
-    plt.xlabel('time (s)')
-    plt.ylabel('Relative Difference')
-    plt.title('Rotational Energy')
 
     plt.figure()
     plt.clf()

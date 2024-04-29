@@ -91,6 +91,7 @@ void linearTranslationNDOFStateEffector::Reset(uint64_t CurrentClock)
     }
 }
 
+/*! This method is used to add a translating body. */
 void linearTranslationNDOFStateEffector::addTranslatingBody(const translatingBody& newBody) {
     // Pushback new body
     translatingBodyVec.push_back(newBody);
@@ -107,6 +108,7 @@ void linearTranslationNDOFStateEffector::addTranslatingBody(const translatingBod
     this->CRho.conservativeResize(this->CRho.rows()+1);
 }
 
+/*! This method reads motor force, lock flag, and reference state messages. */
 void linearTranslationNDOFStateEffector::readInputMessages()
 {
     //! - Read the incoming command array
@@ -143,7 +145,7 @@ void linearTranslationNDOFStateEffector::readInputMessages()
     }
 }
 
-/*! This method takes the computed eho states and outputs them to the messaging system. */
+/*! This method takes the computed rho states and outputs them to the messaging system. */
 void linearTranslationNDOFStateEffector::writeOutputStateMessages(uint64_t CurrentClock)
 {
     // Write out the translating body output messages
@@ -180,14 +182,14 @@ void linearTranslationNDOFStateEffector::prependSpacecraftNameToStates()
     this->nameOfRhoDotState = this->nameOfSpacecraftAttachedTo + this->nameOfRhoDotState;
 }
 
-/*! This method allows the SB state effector to have access to the hub states and gravity*/
+/*! This method allows the TB state effector to have access to the hub states and gravity*/
 void linearTranslationNDOFStateEffector::linkInStates(DynParamManager& statesIn)
 {
     this->inertialPositionProperty = statesIn.getPropertyReference(this->nameOfSpacecraftAttachedTo + "r_BN_N");
     this->inertialVelocityProperty = statesIn.getPropertyReference(this->nameOfSpacecraftAttachedTo + "v_BN_N");
 }
 
-/*! This method allows the SB state effector to register its states: rho and rhoDot with the dynamic parameter manager */
+/*! This method allows the TB state effector to register its states: rho and rhoDot with the dynamic parameter manager */
 void linearTranslationNDOFStateEffector::registerStates(DynParamManager& states)
 {
     // Register the rho states
@@ -205,7 +207,7 @@ void linearTranslationNDOFStateEffector::registerStates(DynParamManager& states)
     this->rhoDotState->setState(RhoDotInitMatrix);
 }
 
-/*! This method allows the SB state effector to provide its contributions to the mass props and mass prop rates of the
+/*! This method allows the TB state effector to provide its contributions to the mass props and mass prop rates of the
  spacecraft */
 void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTime)
 {
@@ -259,8 +261,7 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
         translatingBody.IPntFc_B = translatingBody.dcm_FB.transpose() * translatingBody.IPntFc_F * translatingBody.dcm_FB;
         this->effProps.IEffPntB_B += translatingBody.IPntFc_B - translatingBody.mass * translatingBody.rTilde_FcB_B * translatingBody.rTilde_FcB_B;
 
-        // Find rPrime_Sc1B_B and rPrime_Sc2B_B
-                // BN_B or FN_B check
+        // Find rPrime_FcB_B
         Eigen::Matrix3d omegaTilde_FB_B = Eigen::Matrix3d::Zero();
         translatingBody.rPrime_FcF_B = Eigen::Vector3d::Zero();
         translatingBody.rPrime_FF0_B = translatingBody.rhoDot * translatingBody.fHat_B;
@@ -273,7 +274,7 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
         translatingBody.rPrime_FcB_B = translatingBody.rPrime_FcF_B + translatingBody.rPrime_FB_B;
         this->effProps.rEffPrime_CB_B += translatingBody.mass * translatingBody.rPrime_FcB_B;
 
-        // Find the body-frame time derivative of the inertias of each arm and the entire spacecraft
+        // Find the body-frame time derivative of the inertia of each arm and the entire spacecraft
         translatingBody.IPrimePntFc_B = Eigen::Matrix3d::Zero();
         Eigen::Matrix3d rPrimeTilde_FcB_B = eigenTilde(translatingBody.rPrime_FcB_B);
         this->effProps.IEffPrimePntB_B += translatingBody.IPrimePntFc_B - translatingBody.mass * (rPrimeTilde_FcB_B * translatingBody.rTilde_FcB_B + translatingBody.rTilde_FcB_B * rPrimeTilde_FcB_B);
@@ -284,7 +285,7 @@ void linearTranslationNDOFStateEffector::updateEffectorMassProps(double integTim
     this->effProps.rEffPrime_CB_B /= this->effProps.mEff;
 }
 
-/*! This method allows the SB state effector to give its contributions to the matrices needed for the back-sub 
+/*! This method allows the TB state effector to give its contributions to the matrices needed for the back-sub
  method */
 void linearTranslationNDOFStateEffector::updateContributions(double integTime, BackSubMatrices & backSubContr, Eigen::Vector3d sigma_BN, Eigen::Vector3d omega_BN_B, Eigen::Vector3d g_N)
 {
@@ -312,6 +313,7 @@ void linearTranslationNDOFStateEffector::updateContributions(double integTime, B
     this->computeBackSubContributions(backSubContr);
 }
 
+/*! This method compute MRho for back-sub */
 void linearTranslationNDOFStateEffector::computeMRho(Eigen::MatrixXd& MRho)
 {
     for (int n = 0; n<this->N; n++) {
@@ -327,6 +329,7 @@ void linearTranslationNDOFStateEffector::computeMRho(Eigen::MatrixXd& MRho)
     }
 }
 
+/*! This method compute ARhoStar for back-sub */
 void linearTranslationNDOFStateEffector::computeARhoStar(Eigen::MatrixXd& ARhoStar)
 {
     for (int n = 0; n<this->N; n++) {
@@ -338,6 +341,7 @@ void linearTranslationNDOFStateEffector::computeARhoStar(Eigen::MatrixXd& ARhoSt
     }
 }
 
+/*! This method compute BRhoStar for back-sub */
 void linearTranslationNDOFStateEffector::computeBRhoStar(Eigen::MatrixXd& BRhoStar)
 {
     for (int n = 0; n<this->N; n++) {
@@ -352,6 +356,7 @@ void linearTranslationNDOFStateEffector::computeBRhoStar(Eigen::MatrixXd& BRhoSt
     }
 }
 
+/*! This method compute CRhoStar for back-sub */
 void linearTranslationNDOFStateEffector::computeCRhoStar(Eigen::VectorXd& CRhoStar,
                                                       const Eigen::Vector3d& g_N)
 {
@@ -380,6 +385,7 @@ void linearTranslationNDOFStateEffector::computeCRhoStar(Eigen::VectorXd& CRhoSt
     }
 }
 
+/*! This method computes the back-sub contributions of the system */
 void linearTranslationNDOFStateEffector::computeBackSubContributions(BackSubMatrices& backSubContr) const
 {
     Eigen::Matrix3d omegaTilde_BN_B = eigenTilde(this->omega_BN_B);
@@ -404,10 +410,7 @@ void linearTranslationNDOFStateEffector::computeBackSubContributions(BackSubMatr
     }
 }
 
-
-
-/*! This method is used to find the derivatives for the SB stateEffector: rhoDDot and the kinematic derivative */
-//YES
+/*! This method is used to find the derivatives for the TB stateEffector: rhoDDot and the kinematic derivative */
 void linearTranslationNDOFStateEffector::computeDerivatives(double integTime, Eigen::Vector3d rDDot_BN_N, Eigen::Vector3d omegaDot_BN_B, Eigen::Vector3d sigma_BN)
 {
     // Find rDDotLoc_BN_B
@@ -420,7 +423,7 @@ void linearTranslationNDOFStateEffector::computeDerivatives(double integTime, Ei
     this->rhoDotState->setDerivative(rhoDDot);
 }
 
-/*! This method is for calculating the contributions of the SB state effector to the energy and momentum of the spacecraft */
+/*! This method is for calculating the contributions of the TB state effector to the energy and momentum of the spacecraft */
 void linearTranslationNDOFStateEffector::updateEnergyMomContributions(double integTime,
                                                                       Eigen::Vector3d & rotAngMomPntCContr_B,
                                                                       double & rotEnergyContr,
@@ -433,8 +436,7 @@ void linearTranslationNDOFStateEffector::updateEnergyMomContributions(double int
     rotEnergyContr = 0.0;
 
     for(auto& translatingBody: this->translatingBodyVec) {
-        // Update omega_BN_B and omega_FN_B
-        // translatingBody.omega_FN_B = translatingBody.omega_FB_B + this->omega_BN_B; // possible replacement line
+        // Update omega_FN_B
         translatingBody.omega_FN_B = this->omega_BN_B;
 
         // Compute rDot_FcB_B
@@ -457,9 +459,8 @@ void linearTranslationNDOFStateEffector::computeTranslatingBodyInertialStates()
     for(auto& translatingBody: this->translatingBodyVec) {
         // Compute the rotational properties
         Eigen::Matrix3d dcm_FN;
-        dcm_FN = translatingBody.dcm_FB.transpose().transpose() * this->dcm_BN;
+        dcm_FN = translatingBody.dcm_FB * this->dcm_BN;
         translatingBody.sigma_FN = eigenMRPd2Vector3d(eigenC2MRP(dcm_FN));
-        // maybe should be pnb and set pnb = bnb earlier somewhere (forgot where)
         translatingBody.omega_FN_F = translatingBody.dcm_FB.transpose().transpose() * translatingBody.omega_FN_B;
 
         // Compute the translation properties
@@ -468,15 +469,15 @@ void linearTranslationNDOFStateEffector::computeTranslatingBodyInertialStates()
     }
 }
 
-/*! This method is used so that the simulation will ask SB to update messages */
+/*! This method is used so that the simulation will ask TB to update messages */
 void linearTranslationNDOFStateEffector::UpdateState(uint64_t CurrentSimNanos)
 {
-    /* Read input messages*/
+    /* Read input messages */
     this->readInputMessages();
 
     /* Compute translating body inertial states */
     this->computeTranslatingBodyInertialStates();
     
-    /* Write output messages*/
+    /* Write output messages */
     this->writeOutputStateMessages(CurrentSimNanos);
 }
