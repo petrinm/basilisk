@@ -210,6 +210,7 @@ Complex Spacecraft Dynamics Simulations
    MSM Simulation of Charged Spacecraft <scenarioTwoChargedSC>
    Spacecraft with 1- or 2-DOF Panel using single effector <scenarioSpinningBodiesTwoDOF>
    Prescribed Motion Rotational Solar Array Deployment <scenarioDeployingSolarArrays>
+   Two Spacecraft Connected Using Holonomic Constraints <scenarioConstrainedDynamics>
 
 Mission Simulations
 ---------------------------------------
