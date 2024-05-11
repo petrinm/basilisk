@@ -84,7 +84,7 @@ def run(show_plots, env):
 
     Args:
         show_plots (bool): Determines if the script should display plots
-        env (str): Choose whether in Earth orbit 'Gravity' or deep space 'NoGravity'
+        env (str): Choose whether in Earth orbit ``Gravity`` or deep space ``NoGravity``
 
     """
 
