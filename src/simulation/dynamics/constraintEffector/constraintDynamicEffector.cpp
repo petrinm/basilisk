@@ -33,14 +33,14 @@ ConstraintDynamicEffector::ConstraintDynamicEffector()
     this->r_P2P1_B1Init.setZero();
 
     // Initialize gains
-    this->alpha = 0.0;
-    this->beta = 0.0;
-    this->k_d = 0.0;
-    this->c_d = 0.0;
-    this->k_a = 0.0;
-    this->c_a = 0.0;
+    // this->alpha = 0.0;
+    // this->beta = 0.0;
+    // this->k_d = 0.0;
+    // this->c_d = 0.0;
+    // this->k_a = 0.0;
+    // this->c_a = 0.0;
 
-    // Initialize the force and torque quantities
+    // Initialize the stored force and torque quantities
     this->Fc_N.setZero();
     this->L_B2.setZero();
 }
@@ -56,10 +56,87 @@ ConstraintDynamicEffector::~ConstraintDynamicEffector()
  */
 void ConstraintDynamicEffector::Reset(uint64_t CurrentSimNanos)
 {
-    this->k_d = pow(this->alpha,2);
-    this->c_d = 2*this->beta;
-    this->k_a = pow(this->alpha,2);
-    this->c_a = 2*this->beta;
+    // check if any individual gains are not specified
+    bool gainset = this->k_d != 0 || this->c_d != 0 || this->k_a != 0 || this->c_a != 0;
+    if (this->alpha <= 0 && !gainset) {
+        bskLogger.bskLog(BSK_ERROR, "Alpha must be set to a positive nonzero value prior to initialization");
+    }
+    if (this->beta <= 0 && !gainset) {
+        bskLogger.bskLog(BSK_ERROR, "Beta must be set to a positive nonzero value prior to initializaiton");
+    }
+    // if individual k's or c's are already set, don't use alpha & beta
+    if (this->k_d == 0) {
+        this->k_d = pow(this->alpha,2);
+    }
+    if (this->c_d == 0) {
+        this->c_d = 2*this->beta;
+    }
+    if (this->k_a == 0) {
+        this->k_a = pow(this->alpha,2);
+    }
+    if (this->c_a == 0) {
+        this->c_a = 2*this->beta;
+    }
+}
+
+void ConstraintDynamicEffector::setR_P2P1_B1Init(Eigen::Vector3d r_P2P1_B1Init) {
+    this->r_P2P1_B1Init = r_P2P1_B1Init;
+}
+
+void ConstraintDynamicEffector::setR_P1B1_B1(Eigen::Vector3d r_P1B1_B1) {
+    this->r_P1B1_B1 = r_P1B1_B1;
+}
+
+void ConstraintDynamicEffector::setR_P2B2_B2(Eigen::Vector3d r_P2B2_B2) {
+    this->r_P2B2_B2 = r_P2B2_B2;
+}
+
+void ConstraintDynamicEffector::setAlpha(double alpha) {
+    if (alpha > 0.0)
+        this->alpha = alpha;
+    else {
+        bskLogger.bskLog(BSK_ERROR, "Proportional gain tuning variable alpha must be greater than 0.");
+    }
+}
+
+void ConstraintDynamicEffector::setBeta(double beta) {
+    if (beta > 0.0)
+        this->beta = beta;
+    else {
+        bskLogger.bskLog(BSK_ERROR, "Derivative gain tuning parameter beta must be greater than 0.");
+    }
+}
+
+void ConstraintDynamicEffector::setKd(double k_d) {
+    if (k_d > 0.0)
+        this->k_d = k_d;
+    else {
+        bskLogger.bskLog(BSK_ERROR, "Direction constraint proportional gain k_d must be greater than 0.");
+    }
+}
+
+void ConstraintDynamicEffector::setCd(double c_d) {
+    if (c_d > 0.0)
+        this->c_d = c_d;
+    else {
+        bskLogger.bskLog(BSK_ERROR, "Direction constraint derivative gain c_d must be greater than 0.");
+    }
+}
+
+void ConstraintDynamicEffector::setKa(double k_a) {
+    if (k_a > 0.0)
+        this->k_a = k_a;
+    else {
+        bskLogger.bskLog(BSK_ERROR, "Attitude constraint proportional gain k_a must be greater than 0.");
+    }
+}
+
+void ConstraintDynamicEffector::setCa(double c_a) {
+    if (c_a > 0.0)
+        this->c_a = c_a;
+    else {
+        bskLogger.bskLog(BSK_ERROR, "Attitude constraint derivative gain c_a must be greater than 0.");
+    }
 }
 
 /*! This method allows the constraint effector to have access to the parent states
@@ -116,7 +193,6 @@ void ConstraintDynamicEffector::computeForceTorque(double integTime, double time
             Eigen::Vector3d rDot_P2N_N = dcm_B2N.transpose() * rDot_P2B2_B2 + rDot_B2N_N;
             Eigen::Vector3d rDot_P2P1_N = rDot_P2N_N - rDot_P1N_N;
             Eigen::Vector3d omega_B1N_N = dcm_B1N.transpose() * omega_B1N_B1;
-            Eigen::Vector3d omega_B2N_N = dcm_B2N.transpose() * omega_B2N_B2;
 
             // calculate the direction constraint violations
             this->psi_N = r_P2P1_N - dcm_B1N.transpose() * this->r_P2P1_B1Init;
@@ -147,7 +223,7 @@ void ConstraintDynamicEffector::computeForceTorque(double integTime, double time
             this->forceExternal_N = this->Fc_N;
             this->torqueExternalPntB_B = L_B1_len + L_B1_att;
         }
-        else if (scID = 1) {
+        else if (scID == 1) {
             // assign forces and torques for spacecraft 2
             this->forceExternal_N = - this->Fc_N;
             this->torqueExternalPntB_B = this->L_B2;
