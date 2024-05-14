@@ -100,8 +100,6 @@ def run(show_plots, env):
     dynProcess = scSim.CreateNewProcess(simProcessName)
     dynProcess.addTask(scSim.CreateNewTask(simTaskName, simulationTimeStep))
 
-    print(simulationTimeStep)
-
     # Create both spacecraft
     scObject1 = spacecraft.Spacecraft()
     scObject1.ModelTag = "spacecraftBody1"
@@ -159,8 +157,8 @@ def run(show_plots, env):
     r_B1C_N = r_B1N_N - r_CN_N
     r_B2C_N = r_B2N_N - r_CN_N
     # set initial attitudes to zero (note assumption that B1, B2, and N frames all initially aligned is used later)
-    sigma_B1N = [[0.0], [0.0], [0.0]]
-    sigma_B2N = [[0.0], [0.0], [0.0]]
+    # sigma_B1N = [[0.0], [0.0], [0.0]]
+    # sigma_B2N = [[0.0], [0.0], [0.0]]
     # compute relative velocity due to spin and COM offset
     target_spin = [0.01,0.01,0.01]
     omega_CN_N = np.array(target_spin)
@@ -174,22 +172,23 @@ def run(show_plots, env):
     # Set the initial values for all spacecraft states
     scObject1.hub.r_CN_NInit = r_B1N_N
     scObject1.hub.v_CN_NInit = rDot_B1N_N
-    scObject1.hub.sigma_BNInit = sigma_B1N
+    # scObject1.hub.sigma_BNInit = sigma_B1N
     scObject1.hub.omega_BN_BInit = omega_B1N_B1
     scObject2.hub.r_CN_NInit = r_B2N_N
     scObject2.hub.v_CN_NInit = rDot_B2N_N
-    scObject2.hub.sigma_BNInit = sigma_B2N
+    # scObject2.hub.sigma_BNInit = sigma_B2N
     scObject2.hub.omega_BN_BInit = omega_B2N_B2
 
     # Create the constraint effector module
     constraintEffector = constraintDynamicEffector.ConstraintDynamicEffector()
     # Set up the constraint effector physical parameters
-    constraintEffector.r_P1B1_B1 = r_P1B1_B1
-    constraintEffector.r_P2B2_B2 = r_P2B2_B2
-    constraintEffector.r_P2P1_B1Init = r_P2P1_B1Init
-    constraintEffector.alpha = 1e2
-    constraintEffector.beta = 1e3
+    constraintEffector.setR_P1B1_B1(r_P1B1_B1)
+    constraintEffector.setR_P2B2_B2(r_P2B2_B2)
+    constraintEffector.setR_P2P1_B1Init(r_P2P1_B1Init)
+    constraintEffector.setAlpha(1E2)
+    constraintEffector.setBeta(1e3)
     constraintEffector.ModelTag = "constraintEffector"
+
     # Add the constraint to both spacecraft
     scObject1.addDynamicEffector(constraintEffector)
     scObject2.addDynamicEffector(constraintEffector)
