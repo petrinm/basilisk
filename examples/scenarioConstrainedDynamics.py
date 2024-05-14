@@ -96,7 +96,7 @@ def run(show_plots, env):
     simProcessName = "simProcess"  # arbitrary name (don't change)
 
     # Create the simulation process and specify the integration update time
-    simulationTimeStep = macros.sec2nano(0.01)  # update process rate update time
+    simulationTimeStep = macros.sec2nano(0.1)  # update process rate update time
     dynProcess = scSim.CreateNewProcess(simProcessName)
     dynProcess.addTask(scSim.CreateNewTask(simTaskName, simulationTimeStep))
 
@@ -136,48 +136,43 @@ def run(show_plots, env):
         oe.Omega = 60.0 * macros.D2R
         oe.omega = 15.0 * macros.D2R
         oe.f = 90.0 * macros.D2R
-        r_B2N_N, rDot_B2N_N = orbitalMotion.elem2rv(earthGravBody.mu, oe)
+        r_B2N_N_0, rDot_B2N_N = orbitalMotion.elem2rv(earthGravBody.mu, oe)
     else: # If no gravity requested, place in free-floating space
-        r_B2N_N = np.array([1,1,1])
+        r_B2N_N_0 = np.array([1,1,1])
         rDot_B2N_N = np.array([1,1,1])
 
     # Set initial attitudes to zero (B1, B2, and N frames all initially aligned)
-    dir = r_B2N_N/np.linalg.norm(r_B2N_N)
+    dir = r_B2N_N_0/np.linalg.norm(r_B2N_N_0)
     l = 0.1
     COMoffset = 0.1 # distance from COM to where the arm connects to the spacecraft hub, same for both spacecraft [meters]
     r_P1B1_B1 = np.dot(dir,COMoffset)
     r_P2B2_B2 = np.dot(-dir,COMoffset)
     r_P2P1_B1Init = np.dot(dir,l)
-    r_B1N_N = r_B2N_N + r_P2B2_B2 - r_P2P1_B1Init - r_P1B1_B1
+    r_B1N_N_0 = r_B2N_N_0 + r_P2B2_B2 - r_P2P1_B1Init - r_P1B1_B1
     rDot_B1N_N = rDot_B2N_N
 
     # Compute rotational states
     # let C be the frame at the combined COM of the two vehicles
-    r_CN_N = (r_B1N_N * scObject1.hub.mHub + r_B2N_N * scObject2.hub.mHub) / (scObject1.hub.mHub + scObject2.hub.mHub)
-    r_B1C_N = r_B1N_N - r_CN_N
-    r_B2C_N = r_B2N_N - r_CN_N
-    # set initial attitudes to zero (note assumption that B1, B2, and N frames all initially aligned is used later)
-    # sigma_B1N = [[0.0], [0.0], [0.0]]
-    # sigma_B2N = [[0.0], [0.0], [0.0]]
+    r_CN_N = (r_B1N_N_0 * scObject1.hub.mHub + r_B2N_N_0 * scObject2.hub.mHub) / (scObject1.hub.mHub + scObject2.hub.mHub)
+    r_B1C_N = r_B1N_N_0 - r_CN_N
+    r_B2C_N = r_B2N_N_0 - r_CN_N
     # compute relative velocity due to spin and COM offset
     target_spin = [0.01,0.01,0.01]
     omega_CN_N = np.array(target_spin)
-    omega_B1N_B1 = omega_CN_N
-    omega_B2N_B2 = omega_CN_N
+    omega_B1N_B1_0 = omega_CN_N
+    omega_B2N_B2_0 = omega_CN_N
     dv_B1C_N = np.cross(omega_CN_N,r_B1C_N)
     dv_B2C_N = np.cross(omega_CN_N,r_B2C_N)
-    rDot_B1N_N = rDot_B1N_N + dv_B1C_N
-    rDot_B2N_N = rDot_B2N_N + dv_B2C_N
+    rDot_B1N_N_0 = rDot_B1N_N + dv_B1C_N
+    rDot_B2N_N_0 = rDot_B2N_N + dv_B2C_N
 
     # Set the initial values for all spacecraft states
-    scObject1.hub.r_CN_NInit = r_B1N_N
-    scObject1.hub.v_CN_NInit = rDot_B1N_N
-    # scObject1.hub.sigma_BNInit = sigma_B1N
-    scObject1.hub.omega_BN_BInit = omega_B1N_B1
-    scObject2.hub.r_CN_NInit = r_B2N_N
-    scObject2.hub.v_CN_NInit = rDot_B2N_N
-    # scObject2.hub.sigma_BNInit = sigma_B2N
-    scObject2.hub.omega_BN_BInit = omega_B2N_B2
+    scObject1.hub.r_CN_NInit = r_B1N_N_0
+    scObject1.hub.v_CN_NInit = rDot_B1N_N_0
+    scObject1.hub.omega_BN_BInit = omega_B1N_B1_0
+    scObject2.hub.r_CN_NInit = r_B2N_N_0
+    scObject2.hub.v_CN_NInit = rDot_B2N_N_0
+    scObject2.hub.omega_BN_BInit = omega_B2N_B2_0
 
     # Create the constraint effector module
     constraintEffector = constraintDynamicEffector.ConstraintDynamicEffector()
