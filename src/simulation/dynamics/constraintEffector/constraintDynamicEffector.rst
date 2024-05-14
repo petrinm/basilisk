@@ -46,21 +46,21 @@ This section outlines the steps needed to setup a Constraint Dynamic Effector in
 
 #. Define all physical parameters for the constraint::
 
-    constraintEffector.r_P1B1_B1 = r_P1B1_B1
-    constraintEffector.r_P2B2_B2 = r_P2B2_B2
-    constraintEffector.r_P2P1_B1Init = r_P2P1_B1Init
+    constraintEffector.setR_P1B1_B1(r_P1B1_B1)
+    constraintEffector.setR_P2B2_B2(r_P2B2_B2)
+    constraintEffector.setR_P2P1_B1Init(r_P2P1_B1Init)
 
 #. Define the stiffness and damping of the connection. See the recommended starting gains here::
 
-    constraintEffector.alpha = 1e3
-    constraintEffector.beta = constraintEffector.alpha
+    constraintEffector.setAlpha(1E2)
+    constraintEffector.setBeta(1e3)
 
 #. (Optional) Define exact gains for the direction and attitude constraints separately. These are internally set based on alpha and beta during reset, but can be overridden in this way::
 
-    constraintEffector.k_d = alpha**2
-    constraintEffector.c_d = 2*beta
-    constraintEffector.k_a = alpha**2
-    constraintEffector.c_a = 2*beta
+    constraintEffector.setKd(alpha**2)
+    constraintEffector.setCd(2*beta)
+    constraintEffector.setKa(alpha**2)
+    constraintEffector.setCa(2*beta)
 
 #. Add the effector to both spacecraft::
 
@@ -78,3 +78,15 @@ This section outlines the steps needed to setup a Constraint Dynamic Effector in
     integratorObject1 = svIntegrators.svIntegratorRKF45(scObject1)
     scObject1.setIntegrator(integratorObject1)
     scObject1.syncDynamicsIntegration(scObject2)
+
+#. (Optional) Retrieve the constraint effector's physical parameters, gain tuning parameters, or exact gains for the direction and attitude constraints::
+
+    constraintEffector.getR_P1B1_B1(r_P1B1_B1)
+    constraintEffector.getR_P2B2_B2(r_P2B2_B2)
+    constraintEffector.getR_P2P1_B1Init(r_P2P1_B1Init)
+    constraintEffector.getAlpha(1E2)
+    constraintEffector.getBeta(1e3)
+    constraintEffector.getKd(alpha**2)
+    constraintEffector.getCd(2*beta)
+    constraintEffector.getKa(alpha**2)
+    constraintEffector.getCa(2*beta)
