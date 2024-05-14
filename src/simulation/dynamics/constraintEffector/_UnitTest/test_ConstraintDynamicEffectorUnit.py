@@ -61,7 +61,8 @@ def test_constraintEffector(show_plots,testCase):
     the constraint violation and keep the spacecraft aligned. For slow moving spacecraft systems such as this, the 
     constraint violations are expected to remain below a threshold dependent on how dynamic a scenario is. The 
     threshold for the scenario with gravity therefore expects a larger threshold than the scenario without gravity. 
-    The direction and attitude constraint violations checked are:
+    Accuracy checks based on prior testings are included here to ensure that future changes don't worsen performance, 
+    not to verify any theoretical thresholds. The direction and attitude constraint violations checked are:
 
     - ``psi_B1``
     - ``sigma_B2B1``
@@ -164,12 +165,12 @@ def constraintEffector(show_plots, testCase):
     # Create the constraint effector module
     constraintEffector = constraintDynamicEffector.ConstraintDynamicEffector()
     # Set up the constraint effector
-    constraintEffector.r_P1B1_B1 = r_P1B1_B1
-    constraintEffector.r_P2B2_B2 = r_P2B2_B2
-    constraintEffector.r_P2P1_B1Init = r_P2P1_B1Init
-    constraintEffector.alpha = 1e3
-    constraintEffector.beta = constraintEffector.alpha
     constraintEffector.ModelTag = "constraintEffector"
+    constraintEffector.setR_P1B1_B1(r_P1B1_B1)
+    constraintEffector.setR_P2B2_B2(r_P2B2_B2)
+    constraintEffector.setR_P2P1_B1Init(r_P2P1_B1Init)
+    constraintEffector.setAlpha(1E3)
+    constraintEffector.setBeta(1e3)
     # Add constraints to both spacecraft
     scObject1.addDynamicEffector(constraintEffector)
     scObject2.addDynamicEffector(constraintEffector)
