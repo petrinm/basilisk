@@ -33,12 +33,12 @@ ConstraintDynamicEffector::ConstraintDynamicEffector()
     this->r_P2P1_B1Init.setZero();
 
     // Initialize gains
-    // this->alpha = 0.0;
-    // this->beta = 0.0;
-    // this->k_d = 0.0;
-    // this->c_d = 0.0;
-    // this->k_a = 0.0;
-    // this->c_a = 0.0;
+    this->alpha = 0.0;
+    this->beta = 0.0;
+    this->k_d = 0.0;
+    this->c_d = 0.0;
+    this->k_a = 0.0;
+    this->c_a = 0.0;
 
     // Initialize the stored force and torque quantities
     this->Fc_N.setZero();
@@ -166,7 +166,7 @@ void ConstraintDynamicEffector::computeForceTorque(double integTime, double time
 {
     if (this->scInitCounter == 2) { // only proceed once both spacecraft are added
         // alternate assigning the constraint force and torque
-        if (scID == 0) { // compute all forces and torques once, assign to spacecraft 1 and store for spacecraft 2
+        if (this->scID == 0) { // compute all forces and torques once, assign to spacecraft 1 and store for spacecraft 2
             // - Collect states from both spacecraft
             Eigen::Vector3d r_B1N_N = this->hubPosition[0]->getState();
             Eigen::Vector3d rDot_B1N_N = this->hubVelocity[0]->getState();
@@ -223,12 +223,12 @@ void ConstraintDynamicEffector::computeForceTorque(double integTime, double time
             this->forceExternal_N = this->Fc_N;
             this->torqueExternalPntB_B = L_B1_len + L_B1_att;
         }
-        else if (scID == 1) {
+        else if (this->scID == 1) {
             // assign forces and torques for spacecraft 2
             this->forceExternal_N = - this->Fc_N;
             this->torqueExternalPntB_B = this->L_B2;
         }
-        scID = (1 + pow(-1,scID))/2; // toggle spacecraft to be assigned forces and torques
+        this->scID = (1 + pow(-1,this->scID))/2; // toggle spacecraft to be assigned forces and torques
     }
 }
 
