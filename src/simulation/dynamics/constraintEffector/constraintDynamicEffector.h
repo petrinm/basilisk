@@ -1,7 +1,7 @@
 /*
  ISC License
 
- Copyright (c) 2022, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
+ Copyright (c) 2024, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
 
  Permission to use, copy, modify, and/or distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -31,6 +31,8 @@
 #include "architecture/utilities/avsEigenMRP.h"
 #include <Eigen/Dense>
 #include <vector>
+// #include <iostream>
+// #include <cstring>
 
 /*! @brief constraint dynamic effector class */
 class ConstraintDynamicEffector: public SysModel, public DynamicEffector {
@@ -82,21 +84,21 @@ public:
 
 private:
     // Counters and flags
-    int scInitCounter; //!< counter to kill simulation if more than two spacecraft initialized
-    int scID; //!< 0,1 alternating spacecraft tracker to output appropriate force/torque
+    int scInitCounter = 0; //!< counter to kill simulation if more than two spacecraft initialized
+    int scID = 1; //!< 0,1 alternating spacecraft tracker to output appropriate force/torque
 
     // Constraint length and direction
-    Eigen::Vector3d r_P1B1_B1; //!< [m] position vector from spacecraft 1 hub to its connection point P1
-    Eigen::Vector3d r_P2B2_B2; //!< [m] position vector from spacecraft 2 hub to its connection point P2
-    Eigen::Vector3d r_P2P1_B1Init; //!< [m] precribed position vector from spacecraft 1 connection point to spacecraft 2 connection point
+    Eigen::Vector3d r_P1B1_B1 = Eigen::Vector3d::Zero(); //!< [m] position vector from spacecraft 1 hub to its connection point P1
+    Eigen::Vector3d r_P2B2_B2 = Eigen::Vector3d::Zero(); //!< [m] position vector from spacecraft 2 hub to its connection point P2
+    Eigen::Vector3d r_P2P1_B1Init = Eigen::Vector3d::Zero(); //!< [m] precribed position vector from spacecraft 1 connection point to spacecraft 2 connection point
 
     // Gains for PD controller
-    double alpha; //!< Baumgarte stabilization gain tuning variable
-    double beta; //!< Baumgarte stabilization gain tuning variable
-    double k_d; //!< direction constraint proportional gain
-    double c_d; //!< direction constraint derivative gain
-    double k_a; //!< attitude constraint proportional gain
-    double c_a; //!< attitude constraint derivative gain
+    double alpha = 0.0; //!< Baumgarte stabilization gain tuning variable
+    double beta = 0.0; //!< Baumgarte stabilization gain tuning variable
+    double k_d = 0.0; //!< direction constraint proportional gain
+    double c_d = 0.0; //!< direction constraint derivative gain
+    double k_a = 0.0; //!< attitude constraint proportional gain
+    double c_a = 0.0; //!< attitude constraint derivative gain
 
     // Simulation variable pointers
     std::vector<StateData*> hubPosition;    //!< [m] parent inertial position vector
@@ -105,16 +107,15 @@ private:
     std::vector<StateData*> hubOmega;       //!< [rad/s] parent inertial angular velocity vector
 
     // Constraint violations
-    Eigen::Vector3d psi_N; //!< [m] direction constraint violation in inertial frame
-    Eigen::Vector3d psiPrime_N; //!< [m/s] direction rate constraint violation in inertial frame
-    Eigen::MRPd sigma_B2B1; //!< attitude constraint violation
-    Eigen::Vector3d omega_B2B1_B2; //!< [rad/s] angular velocity constraint violation in spacecraft 2 body frame
+    Eigen::Vector3d psi_N = Eigen::Vector3d::Zero(); //!< [m] direction constraint violation in inertial frame
+    Eigen::Vector3d psiPrime_N = Eigen::Vector3d::Zero(); //!< [m/s] direction rate constraint violation in inertial frame
+    // Eigen::MRPd sigma_B2B1 = Eigen::MRPd::Identity(); //!< attitude constraint violation
+    Eigen::MRPd sigma_B2B1;
+    Eigen::Vector3d omega_B2B1_B2 = Eigen::Vector3d::Zero(); //!< [rad/s] angular velocity constraint violation in spacecraft 2 body frame
 
     // Force and torque quantities stored to be assigned on the alternating call of computeForceTorque
-    Eigen::Vector3d Fc_N; //!< [N] force applied on each spacecraft COM in the inertial frame
-    Eigen::Vector3d L_B2; //!< [N-m] torque applied on spacecraft 2 in its body frame
-
-    BSKLogger bskLogger;                    //!< BSK Logging
+    Eigen::Vector3d Fc_N = Eigen::Vector3d::Zero(); //!< [N] force applied on each spacecraft COM in the inertial frame
+    Eigen::Vector3d L_B2 = Eigen::Vector3d::Zero(); //!< [N-m] torque applied on spacecraft 2 in its body frame
 };
 
 

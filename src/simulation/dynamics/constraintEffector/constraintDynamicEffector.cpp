@@ -1,7 +1,7 @@
 /*
  ISC License
 
- Copyright (c) 2022, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
+ Copyright (c) 2024, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
 
  Permission to use, copy, modify, and/or distribute this software for any
  purpose with or without fee is hereby granted, provided that the above
@@ -20,29 +20,10 @@
 #include "constraintDynamicEffector.h"
 #include "architecture/utilities/avsEigenSupport.h"
 
-/*! This is the constructor, setting variables to default values */
+/*! This is the constructor, nothing to report here */
 ConstraintDynamicEffector::ConstraintDynamicEffector()
 { 
-    // Initialize counters and flags
-    this->scInitCounter = 0;
-    this->scID = 1;
 
-    // Initialize constraint dimensions
-    this->r_P1B1_B1.setZero();
-    this->r_P2B2_B2.setZero();
-    this->r_P2P1_B1Init.setZero();
-
-    // Initialize gains
-    this->alpha = 0.0;
-    this->beta = 0.0;
-    this->k_d = 0.0;
-    this->c_d = 0.0;
-    this->k_a = 0.0;
-    this->c_a = 0.0;
-
-    // Initialize the stored force and torque quantities
-    this->Fc_N.setZero();
-    this->L_B2.setZero();
 }
 
 /*! This is the destructor, nothing to report here */
