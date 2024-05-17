@@ -1,7 +1,7 @@
 #
 #  ISC License
 #
-#  Copyright (c) 2023, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
+#  Copyright (c) 2024, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
 #
 #  Permission to use, copy, modify, and/or distribute this software for any
 #  purpose with or without fee is hereby granted, provided that the above
@@ -20,10 +20,10 @@
 #
 # Basilisk Scenario Script and Integrated Test
 #
-# Purpose:  Integrated test of the spinningBodies2DOF() modules.  Illustrates a few differenct configurations of a
-#           spacecraft with a rigid hub and a 2-DOF effector attached.
-# Author:   João Vaz Carneiro
-# Creation Date:  Jul. 30, 2023
+# Purpose:  Integrated test of the constraintDynamicEffector module. Illustrates setting up
+#           a pair of connected spacecraft with an initial relative spin.
+# Author:    João Vaz Carneiro and Andrew Morell
+# Creation Date:  May, 14 2024
 #
 
 

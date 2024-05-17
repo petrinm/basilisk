@@ -1,6 +1,6 @@
 # ISC License
 #
-# Copyright (c) 2023, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
+# Copyright (c) 2024, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -59,7 +59,7 @@ the mass and inertia of the respective vehicles, and how stiff the gains are dri
 #
 #   Purpose:            Illustrates two spacecraft connected via a holonomic constraint
 #   Author:             Andrew Morell
-#   Creation Date:      Jul 20, 2023
+#   Creation Date:      May 14, 2024
 #
 
 # system imports
