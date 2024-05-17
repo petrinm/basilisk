@@ -1,6 +1,6 @@
 # ISC License
 #
-# Copyright (c) 2022, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
+# Copyright (c) 2024, Autonomous Vehicle Systems Lab, University of Colorado at Boulder
 #
 # Permission to use, copy, modify, and/or distribute this software for any
 # purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
 #   Unit Test Script
 #   Module Name:        constraintEffector
 #   Author:             João Vaz Carneiro and Andrew Morell
-#   Creation Date:      November 8, 2022
+#   Creation Date:      May 14, 2024
 #
 
 import inspect
