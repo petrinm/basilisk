@@ -52,6 +52,7 @@ Version |release|
 - updated Eigen library to 3.4.0
 - updated OpenCV library to 4.5.5
 - Added documentation on using pre-commit formatters and clang formating
+- Added support for Vizard 2.2.0
 
 
 Version 2.3.0 (April 5, 2024)
