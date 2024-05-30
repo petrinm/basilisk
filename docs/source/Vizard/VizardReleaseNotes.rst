@@ -15,6 +15,29 @@ Release Notes
     - Continue to refine and improve the interactive information panels
     - Save streamed data to file to avoid unbounded memory usage when viewing live data
 
+**Version 2.2.0 (June XX, 2024)**
+
+- Added VizEventDialog message type to VizMessage.proto. EventDialogs allow the user to create a GUI panel
+  that pops up in Vizard with informational text and optional button choices that the viewer can select to
+  provide input to the simulation (via a VizEventReply message). There are three dialog format types:
+  informational, caution (yellow), and warning (red).
+- Added ability to send keyboard and EventDialog selection inputs live to connected Basilisk simulation,
+  via the new VizInput message in VizMessage.proto,  this feature requires Vizard to be connected to
+  Basilisk in the Receive & Reply mode
+- Added Receive Only streaming mode to allow additional Vizard instances to subscribe to a Basilisk
+  simulation as viewers. Receive Only connections cannot provide input back to the Basilisk simulation
+- Added forced synchronization of EventDialog and certain settings (orbit line visibility, coordinate
+  frame visibility) of Receive Only (broadcast) viewers with the Receive and Reply user (trainer).
+  When forced synchronization is enabled, broadcast Vizard instances will display the current choices and
+  settings selections of the trainer. The trainer can release forced synchronization mode under the
+  Broadcast tab of the Settings panel to allow broadcast viewers to control their own displays.
+- Improved Vizard handling of incorrect socket address or connection type: failure to connect will
+  result in error message and user will have a chance to correct socket address and/or connection type
+- Improved camera transition between scale regimes (spacecraft local view to planet local view to hello view)
+- Improved camera transition on selection of new camera target
+
+
+
 **Version 2.1.6.1 (March 20, 2024)**
 
 - force Vizard to show the most recently received message when a camera image request
