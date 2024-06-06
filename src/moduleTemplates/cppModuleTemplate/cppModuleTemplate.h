@@ -34,15 +34,24 @@ public:
     void Reset(uint64_t CurrentSimNanos);
     void UpdateState(uint64_t CurrentSimNanos);
 
-public:
-
-    double dummy;                                   //!< [units] sample module variable declaration
-    double dumVector[3];                            //!< [units] sample vector variable
-
     Message<CModuleTemplateMsgPayload> dataOutMsg;     //!< attitude navigation output msg
     ReadFunctor<CModuleTemplateMsgPayload> dataInMsg;  //!< translation navigation output msg
 
-    BSKLogger bskLogger;              //!< -- BSK Logging
+    BSKLogger bskLogger;                               //!< BSK Logging
+
+    /** setter for `dummy` property */
+    void setDummy(double value);
+    /** getter for `dummy` property */
+    double getDummy() const {return this->dummy;}
+    /** setter for `dumVector` property */
+    void setDumVector(double value[3]);
+    /** getter for `dumVector` property */
+    const double *getDumVector() const {return this->dumVector;}
+
+private:
+
+    double dummy = {};                                 //!< [units] sample module variable declaration
+    double dumVector[3] = {};                          //!< [units] sample vector variable
 
 };
 
