@@ -25,6 +25,8 @@
 #include "architecture/utilities/bskLogging.h"
 #include "architecture/messaging/messaging.h"
 
+#include <array>
+
 /*! @brief basic Basilisk C++ module class */
 class CppModuleTemplate: public SysModel {
 public:
@@ -40,18 +42,18 @@ public:
     BSKLogger bskLogger;                               //!< BSK Logging
 
     /** setter for `dummy` property */
-    void setDummy(double value);
+    void setDummy(double value) {this->dummy = value;};
     /** getter for `dummy` property */
     double getDummy() const {return this->dummy;}
     /** setter for `dumVector` property */
-    void setDumVector(double value[3]);
+    void setDumVector(std::array<double, 3> value) {this->dumVector = value;}
     /** getter for `dumVector` property */
-    const double *getDumVector() const {return this->dumVector;}
+    std::array<double, 3> getDumVector() const {return this->dumVector;}
 
 private:
 
     double dummy = {};                                 //!< [units] sample module variable declaration
-    double dumVector[3] = {};                          //!< [units] sample vector variable
+    std::array<double, 3> dumVector = {};              //!< [units] sample vector variable
 
 };
 

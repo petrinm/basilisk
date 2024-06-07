@@ -80,15 +80,3 @@ void CppModuleTemplate::UpdateState(uint64_t CurrentSimNanos)
     bskLogger.bskLog(BSK_INFORMATION, "C++ Module ID %lld ran Update at %fs", this->moduleID, (double) CurrentSimNanos/(1e9));
 
 }
-
-void CppModuleTemplate::setDummy(double value)
-{
-    this->dummy = value;
-}
-
-void CppModuleTemplate::setDumVector(double value[3])
-{
-    for (int i = 0; i<3; i++) {
-        this->dumVector[i] = value[i];
-    }
-}
