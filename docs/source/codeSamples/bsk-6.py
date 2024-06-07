@@ -20,7 +20,6 @@ from Basilisk.moduleTemplates import cModuleTemplate
 from Basilisk.moduleTemplates import cppModuleTemplate
 from Basilisk.utilities import SimulationBaseClass
 from Basilisk.utilities import macros
-from Basilisk.utilities import pythonVariableLogger
 
 def run():
     """
@@ -54,8 +53,7 @@ def run():
     # request these module variables to be recorded
     mod1Logger = mod1.logger("dummy", macros.sec2nano(1.))
     scSim.AddModelToTask("dynamicsTask", mod1Logger)
-    mod2Logger = pythonVariableLogger.PythonVariableLogger({"dummy": lambda _: mod2.getDummy(),
-                                                            "dumVector": lambda _: mod2.getDumVector()})
+    mod2Logger = mod2.logger(["dummy", "dumVector"])
     scSim.AddModelToTask("dynamicsTask", mod2Logger)
 
     #  initialize Simulation:
